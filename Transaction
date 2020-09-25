@@ -1,0 +1,43 @@
+class Transaction {
+
+  private transactionId: String
+
+  private static otherOpenned: Boolean = false
+
+  private begin: VersionVector
+
+  Transaction(tid: TxnId, body: () -> Unit) {
+    if (Transaction.otherOpenned) throw Exception
+    Transaction.otherOpenned = true
+    this.begin = Global.TxnEnv.getState()
+    this.transactionId = Global.TxnEnv.tickTransaction()
+
+    try {
+      body()
+      this.commit()
+    } catch {
+      this.abort()
+    }
+  }
+
+  // c_abort_txn
+  fun abort() {
+    for obj in Global.DirtyCObjects {
+      obj.txnAbort()
+    }
+    Global.DirtyCObjects.clear()
+    Transaction.otherOpenned = false    
+  }
+
+  // c_commit_txn
+  fun commit() {
+    SERVICE.beginTransaction(this.transactionId)
+    for obj in Global.DirtyCObjects {
+      SERVICE.updateObject(obj.crdt.getDelta(this.begin))
+      obj.txnCommit()
+    }
+    SERVICE.commitTransaction(this.transactionId)
+    Global.DirtyCObjects.clear()
+    Transaction.otherOpenned = false    
+  }
+}

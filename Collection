@@ -1,0 +1,32 @@
+class Collection {
+
+  private id: CollectionId
+
+  private readOnly: Boolean
+
+  private static otherOpenned: Boolean = false
+
+  Collection(cid: CollectionId) {
+    if (otherOpenned == true) throw Exception
+    Collection.otherOpenned = true
+    this.id = cid
+  }
+
+  // c_open_read|write<T> handler?
+  // TODO: manage notifications
+  fun open<T>(oid: String, readOnly: Boolean, handler: (VersionVector, List<CObjectId>) -> Unit = {}): T {
+    oid = CObjectId(this.id, oid, T)
+    if (Global.Cache.contains(oid)) return Global.Cache.get(oid)
+    crdt = SERVICE.getObject(oid, TxnEnv.getState()) // SERVICE.subscribe(oid)
+    if (this.readOnly AND NOT readOnly) throw Exception
+    return CObject<T>(oid, crdt, readOnly)
+  }
+
+  fun close() {
+    for obj in Global.Cache {
+      SERVICE.unsubscribe(obj.id)
+    }
+    Global.Cache.clear()
+    Collection.otherOpenned = false
+  }
+}

@@ -1,0 +1,43 @@
+class CObject<T> {
+
+  private id: CObjectId
+
+  private readOnly: Boolean
+
+  private crdt: DeltaCRDT<T>
+
+  private txnBackup: DeltaCRDT<T>?
+
+  CObject(oid: CObjectId, crdt: DeltaCRDT<T>, readOnly: Boolean) {
+    this.id = oid
+    this.crdt = crdt
+    this.txnBackup = null
+  }
+
+  package fun txnAbort() {
+    this.crdt = this.txnBackup
+    this.txnBackup = null
+  }
+
+  package fun txnCommit() {
+    this.txnBackup = null
+  }
+
+  fun update(args) {
+    if (NOT Global.DirtyCObjects.contains(this)) {
+      Global.DirtyCObjects.put(this.id, this)
+      this.txnBackup = this.crdt.copy()
+    }
+    ts = Global.TxnEnv.tick()
+    crdt.update(args, ts)
+  }
+
+  fun getter(args): val {
+    return crdt.getter(args)
+  }
+
+  fun close() {
+    Global.Cache.remove(this.id)
+    SERVICE.unsubscribe(this.id)
+  }
+}

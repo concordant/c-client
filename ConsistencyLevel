@@ -1,0 +1,6 @@
+enum ConsistencyLevel {
+  
+  RC,
+  Snapshot,
+  Strong
+}

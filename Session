@@ -1,0 +1,48 @@
+class Session {
+
+  private consistency: ConsistencyLevel
+
+  private cliendId: CliendId
+
+  Session(cid: ClientId) {
+    this.clientId = cid
+  }
+
+  // c_begin_session
+  static fun open(dbName: String, credentials: String): Session {
+    clientId = ClientId()
+    if (NOT SERVICE.open(dbName, credentials, clientId)) throw Exception
+    return Session(clientId)
+  }
+
+  // c_pull_XX_view
+  fun pull(type: ConsistencyLevel) {
+    if (consistency != null AND consistency > type) throw Exception
+    this.consistency = type
+    v = SERVICE.pull(type)
+    Global.TxnEnv.updateState(v)
+  }
+
+  // c_pull_XX_view(v)
+  fun pull(type: ConsistencyLevel, vv: VersionVector) {
+    if (view != null AND view.type > type) throw Exception
+    if (vv < global.TxnEnv.getState()) throw Exception
+    v = SERVICE.pull(type, vv)
+    Global.TxnEnv.updateState(v)
+  }
+  
+  // c_open_collection_read|write
+  fun openCollection(cid: CollectionId, readOnly: Boolean): Collection {
+    return Collection(cid)
+  }
+
+  // c_XX_txn
+  fun beginTransaction(body: () -> Unit) {
+    Transaction(body)
+  }
+
+  // c_end_session
+  fun close() {
+    SERVICE.close(clientId)
+  }
+}

@@ -1,0 +1,5 @@
+TxnEnv: TransactionEnvironment
+
+DirtyCObjects: Map<CObjectId, CObject>
+
+Cache: Map<CObjectId, CObject>
