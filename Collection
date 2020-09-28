@@ -1,7 +1,7 @@
 class Collection {
 
-  // The collection id
-  private id: CollectionId
+  // The collection unique id
+  private id: CollectionUId
 
   // Is the collection open in read only mode
   private readOnly: Boolean
@@ -9,7 +9,7 @@ class Collection {
   // Static boolean used to ensure that only one collection is openned
   private static otherOpenned: Boolean = false
 
-  Collection(cid: CollectionId, readOnly: Boolean) {
+  Collection(cid: CollectionUId, readOnly: Boolean) {
     if (Collection.otherOpenned == true) throw Exception
     Collection.otherOpenned = true
     this.id = cid
@@ -21,7 +21,7 @@ class Collection {
     if (this.readOnly AND NOT readOnly) throw Exception
     if (NOT Session.currentTransaction == null) throw Exception
 
-    oid = CObjectId(this.id, oid, T)
+    oid = CObjectUId(this.id, oid, T)
     if (ActiveSession.cache.contains(oid)) return ActiveSession.cache.get(oid)
 
     crdt, v = SERVICE.getObject(oid, ActiveSession.txnEnv.getState())

@@ -1,14 +1,16 @@
+import c-crdtlib.utils.VersionVector
+
 class Transaction {
 
-  // Transaction id
-  private transactionId: TxnId
+  // Transaction unique id
+  private transactionUId: TxnUId
 
   // The version vector at which the transaction has started
   private begin: VersionVector
 
-  Transaction(tid: TxnId, body: TransactionBody) {
+  Transaction(tid: TxnUId, body: TransactionBody) {
     this.begin = ActiveSession.txnEnv.getState()
-    this.transactionId = ActiveSession.txnEnv.tickTransaction()
+    this.transactionUId = ActiveSession.txnEnv.tickTransaction()
 
     try {
       // call the body function
@@ -31,12 +33,12 @@ class Transaction {
 
   // c_commit_txn
   fun commit() {
-    SERVICE.beginTransaction(this.transactionId)
+    SERVICE.beginTransaction(this.transactionUId)
     for obj in ActiveSession.dirtyObjects {
       SERVICE.pushObject(obj.crdt.getDelta(this.begin))
       obj.txnCommit()
     }
-    SERVICE.commitTransaction(this.transactionId)
+    SERVICE.commitTransaction(this.transactionUId)
     ActiveSession.dirtyObjects.clear()
   }
 }

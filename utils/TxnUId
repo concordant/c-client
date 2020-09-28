@@ -1,0 +1,4 @@
+import c-crdtlib.utils.ClientUId
+
+// Transaction unique identifiers
+type TxnUId = (Int, ClientUId)

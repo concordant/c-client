@@ -1,0 +1,2 @@
+// Concordant object unique identifiers
+type CObjectUId = (CollectionUId, String, Type)

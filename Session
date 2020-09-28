@@ -1,7 +1,10 @@
+import c-crdlib.utils.ClientUId
+import c-crdtlib.utils.VersionVector
+
 class Session {
 
-  // The client id
-  private cliendId: CliendId
+  // The client unique id
+  private cliendUId: CliendUId
 
   // Current consistency level
   private consistency: ConsistencyLevel?
@@ -12,21 +15,21 @@ class Session {
   // Current running transaction
   private currentTransaction: Transaction?
 
-  // Transaction environment should inherit from crdtlib.utils.Environment 
+  // Transaction environment
   package txnEnv: TransactionEnvironment
 
   // Map for dirty Concordant objects
-  package dirtyObjects: Map<CObjectId, CObject>
+  package dirtyObjects: Map<CObjectUId, CObject>
 
   // Map for the cache of Concordant objects
-  package cache: Map<CObjectId, CObject>
+  package cache: Map<CObjectUId, CObject>
 
   // Map for Concordant object handlers management
-  package handlers: Map<CObjectId, NotificationHandler>
+  package handlers: Map<CObjectUId, NotificationHandler>
 
-  private Session(cid: ClientId) {
-    this.clientId = cid
-    this.txnEnv = TransactionEnvironment(this.clientId)
+  private Session(cid: ClientUId) {
+    this.clientUId = cid
+    this.txnEnv = TransactionEnvironment(this.clientUId)
     this.dirtyObjects = mutableMapOf()
     this.cache = mutableMapOf()
     this.handlers = mutableMapOf()
@@ -38,9 +41,9 @@ class Session {
   // c_begin_session
   static fun connect(dbName: String, credentials: String): Session {
     if (NOT ActiveSession == null) throw Exception
-    clientId = ClientId()
-    if (NOT SERVICE.connect(dbName, credentials, clientId)) throw Exception
-    ActiveSession = Session(clientId)
+    clientId = ClientUId()
+    if (NOT SERVICE.connect(dbName, credentials, clientUId)) throw Exception
+    ActiveSession = Session(clientUId)
     retur ActiveSession
   }
 
@@ -72,7 +75,7 @@ class Session {
   }
   
   // c_open_collection_read|write
-  fun openCollection(cid: CollectionId, readOnly: Boolean): Collection {
+  fun openCollection(cid: CollectionUId, readOnly: Boolean): Collection {
     if (NOT this.currentTransaction == null) throw Exception
     return Collection(cid, readOnly)
   }
@@ -86,7 +89,7 @@ class Session {
   // c_end_session
   fun close() {
     if (this.currentTransaction == null) this.currentTransaction.abort()
-    SERVICE.close(clientId)
+    SERVICE.close(clientUId)
     this.serviceHandler.stop()
     ActiveSession = null
   }

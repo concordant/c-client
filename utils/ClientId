@@ -1,2 +1,0 @@
-// Client unique identifiers are UUId, they can also be hierarchic
-type ClientId = UUId

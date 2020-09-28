@@ -1,0 +1,2 @@
+// Operations unique identifiers
+type OperationUId = (TxnUId, Int)

@@ -1,0 +1,5 @@
+import c-crdtlin.utils.Environment
+
+class TransactionEnvironment : Environment {
+  // TODO: implement this class
+}

@@ -1,7 +1,7 @@
 class CObject<T> {
 
-  // Concordant object id
-  private id: CObjectId
+  // Concordant object unique id
+  private id: CObjectUId
 
   // Is openned in read only mode
   private readOnly: Boolean
@@ -12,7 +12,7 @@ class CObject<T> {
   // Backup for the necapsulated CRDT (used in case of transaction abort)
   private txnBackup: DeltaCRDT<T>?
 
-  CObject(oid: CObjectId, crdt: DeltaCRDT<T>, readOnly: Boolean) {
+  CObject(oid: CObjectUId, crdt: DeltaCRDT<T>, readOnly: Boolean) {
     this.id = oid
     this.crdt = crdt
     this.readOnly = readOnly
