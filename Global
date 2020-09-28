@@ -1,5 +1,11 @@
+// Transaction environment should inherit from crdtlib.utils.Environment 
 TxnEnv: TransactionEnvironment
 
+// Map for dirty objects
 DirtyCObjects: Map<CObjectId, CObject>
 
+// Map for the cache
 Cache: Map<CObjectId, CObject>
+
+// Map for c-object handlers management
+Handlers: Map<CObjectId, NotificationHandler>

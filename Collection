@@ -1,9 +1,12 @@
 class Collection {
 
+  // The collection id
   private id: CollectionId
 
+  // Is the collection open in read only mode
   private readOnly: Boolean
 
+  // Static boolean used to ensure that only one collection is openned
   private static otherOpenned: Boolean = false
 
   Collection(cid: CollectionId) {
@@ -12,21 +15,26 @@ class Collection {
     this.id = cid
   }
 
-  // c_open_read|write<T> handler?
-  // TODO: manage notifications
-  fun open<T>(oid: String, readOnly: Boolean, handler: (VersionVector, List<CObjectId>) -> Unit = {}): T {
+  // c_open_read|write<T>
+  fun open<T>(oid: String, readOnly: Boolean, handler: NotificationHandler): T {
+    if (this.readOnly AND NOT readOnly) throw Exception
     oid = CObjectId(this.id, oid, T)
     if (Global.Cache.contains(oid)) return Global.Cache.get(oid)
-    crdt = SERVICE.getObject(oid, TxnEnv.getState()) // SERVICE.subscribe(oid)
-    if (this.readOnly AND NOT readOnly) throw Exception
-    return CObject<T>(oid, crdt, readOnly)
+    crdt, _ = SERVICE.getObject(oid, TxnEnv.getState())
+    SERVICE.subscribe(oid)
+    obj = CObject<T>(oid, crdt, readOnly)
+    Global.Cache.put(oid, obj)
+    Global.Handlers.put(oid, handler)
+    return obj
   }
 
+  // c_close_collection
   fun close() {
-    for obj in Global.Cache {
-      SERVICE.unsubscribe(obj.id)
+    for oid in Global.Cache {
+      SERVICE.unsubscribe(oid)
     }
     Global.Cache.clear()
+    Global.Handlers.clear()
     Collection.otherOpenned = false
   }
 }

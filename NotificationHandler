@@ -1,0 +1,2 @@
+// The notification handler (function) type accepted for c-objects
+type NotificationHandler = (VersionVector, CObjectId) -> Unit

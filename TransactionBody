@@ -1,0 +1,2 @@
+// The function type accepted for a transaction body
+type TransactionBody = () -> Unit

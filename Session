@@ -1,8 +1,13 @@
 class Session {
 
+  // Current consistency level
   private consistency: ConsistencyLevel
 
+  // The client id
   private cliendId: CliendId
+
+  // The attached service handler
+  private serviceHandler: ServiceHandler
 
   Session(cid: ClientId) {
     this.clientId = cid
@@ -12,6 +17,8 @@ class Session {
   static fun open(dbName: String, credentials: String): Session {
     clientId = ClientId()
     if (NOT SERVICE.open(dbName, credentials, clientId)) throw Exception
+    this.serviceHandler = ServiceHandler()
+    this.serviceHandler.run()
     return Session(clientId)
   }
 
@@ -19,16 +26,24 @@ class Session {
   fun pull(type: ConsistencyLevel) {
     if (consistency != null AND consistency > type) throw Exception
     this.consistency = type
-    v = SERVICE.pull(type)
-    Global.TxnEnv.updateState(v)
+    for oid in Cache {
+      crdt, v = SERVICE.getObject(oid)
+      obj = Global.Cache.get(oid)
+      obj.crdt = crdt
+      Global.TxnEnv.updateSate(v)
+    } 
   }
 
   // c_pull_XX_view(v)
   fun pull(type: ConsistencyLevel, vv: VersionVector) {
     if (view != null AND view.type > type) throw Exception
     if (vv < global.TxnEnv.getState()) throw Exception
-    v = SERVICE.pull(type, vv)
-    Global.TxnEnv.updateState(v)
+    for oid in Cache {
+      crdt, v = SERVICE.getObject(oid, vv)
+      obj = Global.Cache.get(oid)
+      obj.crdt = crdt
+      Global.TxnEnv.updateSate(v)
+    } 
   }
   
   // c_open_collection_read|write
@@ -44,5 +59,6 @@ class Session {
   // c_end_session
   fun close() {
     SERVICE.close(clientId)
+    this.serviceHandler.stop()
   }
 }
