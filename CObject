@@ -1,16 +1,21 @@
 class CObject<T> {
 
+  // Concordant object id
   private id: CObjectId
 
+  // Is openned in read only mode
   private readOnly: Boolean
 
+  // The encapsulated CRDT
   private crdt: DeltaCRDT<T>
 
+  // Backup for the necapsulated CRDT (used in case of transaction abort)
   private txnBackup: DeltaCRDT<T>?
 
   CObject(oid: CObjectId, crdt: DeltaCRDT<T>, readOnly: Boolean) {
     this.id = oid
     this.crdt = crdt
+    this.readOnly = readOnly
     this.txnBackup = null
   }
 
@@ -24,20 +29,26 @@ class CObject<T> {
   }
 
   fun update(args) {
-    if (NOT Global.DirtyCObjects.contains(this)) {
-      Global.DirtyCObjects.put(this.id, this)
+    if (Session.currentTransaction == null) throw Exception
+    if (this.readOnly) throw Exception
+    if (NOT ActiveSession.dirtyObjects.contains(this.id)) {
+      ActiveSession.dirtyObjects.put(this.id, this)
       this.txnBackup = this.crdt.copy()
     }
-    ts = Global.TxnEnv.tick()
-    crdt.update(args, ts)
+    // Should be integrrated to CRDTs
+    ts = ActiveSession.txnEnv.tick()
+    this.crdt.update(args, ts)
   }
 
   fun getter(args): val {
+    if (ActiveSession.currentTransaction == null) throw Exception
     return crdt.getter(args)
   }
 
   fun close() {
-    Global.Cache.remove(this.id)
+    if (NOT ActiveSession.currentTransaction == null) throw Exception
+    ActiveSession.cache.remove(this.id)
+    ActiveSession.handlers.remove(this.id)
     SERVICE.unsubscribe(this.id)
   }
 }

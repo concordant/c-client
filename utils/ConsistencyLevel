@@ -1,0 +1,7 @@
+// Different types of consistency level provided by the Concordant platform
+enum ConsistencyLevel {
+
+  RC,
+  Snapshot,
+  Strong
+}

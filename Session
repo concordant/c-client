@@ -1,64 +1,93 @@
 class Session {
 
-  // Current consistency level
-  private consistency: ConsistencyLevel
-
   // The client id
   private cliendId: CliendId
+
+  // Current consistency level
+  private consistency: ConsistencyLevel?
 
   // The attached service handler
   private serviceHandler: ServiceHandler
 
-  Session(cid: ClientId) {
+  // Current running transaction
+  private currentTransaction: Transaction?
+
+  // Transaction environment should inherit from crdtlib.utils.Environment 
+  package txnEnv: TransactionEnvironment
+
+  // Map for dirty Concordant objects
+  package dirtyObjects: Map<CObjectId, CObject>
+
+  // Map for the cache of Concordant objects
+  package cache: Map<CObjectId, CObject>
+
+  // Map for Concordant object handlers management
+  package handlers: Map<CObjectId, NotificationHandler>
+
+  private Session(cid: ClientId) {
     this.clientId = cid
+    this.txnEnv = TransactionEnvironment(this.clientId)
+    this.dirtyObjects = mutableMapOf()
+    this.cache = mutableMapOf()
+    this.handlers = mutableMapOf()
+    this.serviceHandler = ServiceHandler()
+    this.serviceHandler.run()
+    this.currentTransaction = null
   }
 
   // c_begin_session
-  static fun open(dbName: String, credentials: String): Session {
+  static fun connect(dbName: String, credentials: String): Session {
+    if (NOT ActiveSession == null) throw Exception
     clientId = ClientId()
-    if (NOT SERVICE.open(dbName, credentials, clientId)) throw Exception
-    this.serviceHandler = ServiceHandler()
-    this.serviceHandler.run()
-    return Session(clientId)
+    if (NOT SERVICE.connect(dbName, credentials, clientId)) throw Exception
+    ActiveSession = Session(clientId)
+    retur ActiveSession
   }
 
   // c_pull_XX_view
   fun pull(type: ConsistencyLevel) {
-    if (consistency != null AND consistency > type) throw Exception
+    if (NOT this.currentTransaction == null) throw Exception
+    if (this.consistency != null AND this.consistency > type) throw Exception
     this.consistency = type
-    for oid in Cache {
-      crdt, v = SERVICE.getObject(oid)
-      obj = Global.Cache.get(oid)
+    for oid in this.cache {
+      crdt, v = SERVICE.getObject(oid, this.consistency)
+      obj = this.cache.get(oid)
       obj.crdt = crdt
-      Global.TxnEnv.updateSate(v)
+      this.txnEnv.updateSate(v)
     } 
   }
 
   // c_pull_XX_view(v)
   fun pull(type: ConsistencyLevel, vv: VersionVector) {
-    if (view != null AND view.type > type) throw Exception
-    if (vv < global.TxnEnv.getState()) throw Exception
-    for oid in Cache {
-      crdt, v = SERVICE.getObject(oid, vv)
-      obj = Global.Cache.get(oid)
+    if (NOT this.currentTransaction == null) throw Exception
+    if (this.consistency != null AND this.consistency > type) throw Exception
+    if (vv < this.txnEnv.getState()) throw Exception
+    this.consistency = type
+    for oid in this.cache {
+      crdt, v = SERVICE.getObject(oid, vv, this.consistency)
+      obj = this.cache.get(oid)
       obj.crdt = crdt
-      Global.TxnEnv.updateSate(v)
+      this.txnEnv.updateSate(v)
     } 
   }
   
   // c_open_collection_read|write
   fun openCollection(cid: CollectionId, readOnly: Boolean): Collection {
-    return Collection(cid)
+    if (NOT this.currentTransaction == null) throw Exception
+    return Collection(cid, readOnly)
   }
 
   // c_XX_txn
-  fun beginTransaction(body: () -> Unit) {
-    Transaction(body)
+  fun transaction(body: TransactionBody) {
+    if (NOT this.currentTransaction == null) throw Exception
+    this.currentTransaction = Transaction(body)
   }
 
   // c_end_session
   fun close() {
+    if (this.currentTransaction == null) this.currentTransaction.abort()
     SERVICE.close(clientId)
     this.serviceHandler.stop()
+    ActiveSession = null
   }
 }

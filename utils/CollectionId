@@ -1,0 +1,2 @@
+// Collection unique identifiers
+type CollectionId = String

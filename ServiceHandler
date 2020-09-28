@@ -8,7 +8,7 @@ class ServiceHandler: Thread {
   fun work() {
     while (true) {
       v, oid = readMessage()
-      if (Global.Handlers.contains(oid)) {
+      if (ActiveSession.handlers.contains(oid)) {
         // call the corresponding handler
         Handlers.get(oid)(v, oid)
       }

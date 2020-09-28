@@ -1,1 +1,0 @@
-type TxnId = (Int, ClientId)

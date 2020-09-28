@@ -1,2 +1,3 @@
 // The notification handler (function) type accepted for c-objects
+// Unit == void in Kotlin
 type NotificationHandler = (VersionVector, CObjectId) -> Unit

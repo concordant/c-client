@@ -3,17 +3,12 @@ class Transaction {
   // Transaction id
   private transactionId: TxnId
 
-  // Static boolean used to ensure that only one collection is openned
-  private static otherOpenned: Boolean = false
-
   // The version vector at which the transaction has started
   private begin: VersionVector
 
   Transaction(tid: TxnId, body: TransactionBody) {
-    if (Transaction.otherOpenned) throw Exception
-    Transaction.otherOpenned = true
-    this.begin = Global.TxnEnv.getState()
-    this.transactionId = Global.TxnEnv.tickTransaction()
+    this.begin = ActiveSession.txnEnv.getState()
+    this.transactionId = ActiveSession.txnEnv.tickTransaction()
 
     try {
       // call the body function
@@ -28,22 +23,20 @@ class Transaction {
 
   // c_abort_txn
   fun abort() {
-    for obj in Global.DirtyCObjects {
+    for obj in ActiveSession.dirtyObjects {
       obj.txnAbort()
     }
-    Global.DirtyCObjects.clear()
-    Transaction.otherOpenned = false    
+    ActiveSession.dirtyObjects.clear()
   }
 
   // c_commit_txn
   fun commit() {
     SERVICE.beginTransaction(this.transactionId)
-    for obj in Global.DirtyCObjects {
+    for obj in ActiveSession.dirtyObjects {
       SERVICE.pushObject(obj.crdt.getDelta(this.begin))
       obj.txnCommit()
     }
     SERVICE.commitTransaction(this.transactionId)
-    Global.DirtyCObjects.clear()
-    Transaction.otherOpenned = false    
+    ActiveSession.dirtyObjects.clear()
   }
 }
