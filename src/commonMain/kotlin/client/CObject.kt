@@ -21,37 +21,47 @@ package client
 
 import client.utils.ActiveSession
 import client.utils.CObjectUId
+import client.utils.OperationUId
+import crdtlib.crdt.DeltaCRDT
 
-class CObject<T> {
+open class CObject<T> {
 
     /**
     * Concordant object unique id
     */
-    private val id: CObjectUId
+    private val id: CObjectUId<T>
 
     /**
     * Is openned in read only mode
     */
     private val readOnly: Boolean
 
-    constructor(oid: CObjectUId, readOnly: Boolean) {
+    /**
+    * The encapsulated CRDT
+    */
+    protected var crdt: DeltaCRDT<T>? = null
+
+    constructor(oid: CObjectUId<T>, readOnly: Boolean) {
         this.id = oid
         this.readOnly = readOnly
     }
 
-    fun update() {
+    protected fun beforeUpdate(): OperationUId {
         if (this.readOnly) throw RuntimeException("CObject has been opened in read-only mode.")
-
-        // Should be integrated to CRDTs
-        val crdt = CService.getObject<T>(this.id)
-        val ts = ActiveSession.environment.tick()
-        // crdt.update(ts)
-        CService.pushObject<T>(this.id, crdt)
+        if (ActiveSession == null) RuntimeException("Not active session.")
+        this.crdt = CService.getObject<T>(this.id)
+        return (ActiveSession as Session).environment.tick()
     }
 
-    fun getter(): Any {
-        val crdt = CService.getObject<T>(this.id)
-        return 1 // crdt.getter()
+    protected fun afterUpdate() {
+        CService.pushObject<T>(this.id, this.crdt)
+    }
+
+    protected fun beforeGetter() {
+        this.crdt = CService.getObject<T>(this.id)
+    }
+
+    protected fun afterGetter() {
     }
 
     fun close() {

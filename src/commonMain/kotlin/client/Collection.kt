@@ -41,11 +41,11 @@ class Collection {
     }
 
     // c_open_read|write<T>
-    fun <T> open(oid: String, readOnly: Boolean, handler: NotificationHandler): T {
+    fun <T> open(oid: String, readOnly: Boolean, handler: NotificationHandler<T>): T {
         if (this.readOnly && !readOnly) throw RuntimeException("Collection has been opened in read-only mode.")
 
-        val oid = CObjectUId<T>(this.id, oid, T)
-        return CObject<T>(oid, readOnly)
+        val oid = CObjectUId<T>(this.id, oid)
+        return CObject<T>(oid, readOnly) as T
     }
 
     // c_close_collection

@@ -37,7 +37,7 @@ class Session {
     /**
     * The environment linked to the session
     */
-    private val environment: SimpleEnvironment
+    public val environment: SimpleEnvironment
 
     private constructor(cid: ClientUId) {
         this.clientUId = cid
@@ -66,7 +66,7 @@ class Session {
     companion object {
         // c_begin_session
         fun connect(dbName: String, credentials: String): Session {
-            val clientUId = UUID()
+            val clientUId = ClientUId("MY_ID")
             if (!CService.connect(dbName, clientUId)) throw RuntimeException("Connection to server failed.")
             val session = Session(clientUId)
             ActiveSession = session
