@@ -22,4 +22,4 @@ package client.utils
 /**
 * Concordant object unique identifiers
 */
-data class CObjectUId(val cid: CollectionUId, val name: String, val type: Type)
+data class CObjectUId<T>(val cid: CollectionUId, val name: String)
