@@ -1,4 +1,4 @@
-package client
+package client.utils
 
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.*

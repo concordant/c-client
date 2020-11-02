@@ -17,7 +17,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-package client
+package client.utils
 
 import client.utils.CObjectUId
 import crdtlib.crdt.DeltaCRDT
