@@ -20,6 +20,6 @@
 package client.utils
 
 /**
-* Concordant object unique identifiers
+* Concordant object unique identifier.
 */
 data class CObjectUId<T>(val cid: CollectionUId, val name: String)
