@@ -17,18 +17,25 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-package client.utils
+package client
 
+import client.utils.ActiveSession
+import io.kotest.assertions.throwables.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.*
-import io.ktor.client.*
-import io.ktor.client.request.*
 
-class CServiceTest : StringSpec({
-    
-    "connect to express server" {
-        val client = HttpClient()
-        val result = client.get<String>("http://127.0.0.1:50000/")
-        result.shouldBe("Hello world!!")
+class SessionTest : StringSpec({
+ 
+    "open session should be active session" {
+        val session = Session.connect("mydatabase", "credentials")
+        ActiveSession.shouldBe(session)
+    }
+
+    "open read collection then open write object" {
+        val session = Session.connect("mydatabase", "credentials")
+        val collection = session.openCollection("mycollection", true)
+        shouldThrow<RuntimeException> {
+            collection.open<Any>("mycounter", false, { _, _ -> Unit })
+        }
     }
 })
