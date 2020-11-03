@@ -21,16 +21,20 @@
 package client
 
 import client.utils.ActiveSession
+import client.utils.CService
 import client.utils.CollectionUId
 import client.utils.ConsistencyLevel
 import crdtlib.utils.ClientUId
 import crdtlib.utils.SimpleEnvironment
 import crdtlib.utils.VersionVector
 
+/**
+* Class representing a client session.
+*/
 class Session {
 
     /**
-    * The client unique id
+    * The client unique identifier
     */
     private val clientUId: ClientUId
 
@@ -39,32 +43,52 @@ class Session {
     */
     public val environment: SimpleEnvironment
 
-    private constructor(cid: ClientUId) {
-        this.clientUId = cid
+    /**
+    * Private constructor.
+    * @param clientUId the client unique identifier.
+    */
+    private constructor(clientUId: ClientUId) {
+        this.clientUId = clientUId
         this.environment = SimpleEnvironment(this.clientUId)
     }
 
     // c_pull_XX_view
     fun pull(type: ConsistencyLevel) {
+        // Not yet implemented
+        throw RuntimeException("Method pull is not yet supported.")
     }
 
     // c_pull_XX_view(v)
     fun pull(type: ConsistencyLevel, vv: VersionVector) {
+        // Not yet implemented
+        throw RuntimeException("Method pull is not yet supported.")
     }
   
-    // c_open_collection_read|write
-    fun openCollection(cid: CollectionUId, readOnly: Boolean): Collection {
-        return Collection(cid, readOnly)
+    /**
+     * Opens a given collection with the given read-only mode.
+     * @param collectionUId the collection unique identifier.
+     * @param readOnly is read-only mode activated.
+     * @return the corresponding collection.
+     */
+    fun openCollection(collectionUId: CollectionUId, readOnly: Boolean): Collection {
+        return Collection(collectionUId, readOnly)
     }
 
-    // c_end_session
+    /**
+     * Closes this session.
+     */
     fun close() {
         CService.close(this.clientUId)
         ActiveSession = null
     }
 
     companion object {
-        // c_begin_session
+        /**
+         * Connects a client to Concordant platform.
+         * @param dbName the database name that should be accessed.
+         * @param credentials the crediantials provided by the client.
+         * @return the client session to communicate with Concordant.
+         */
         fun connect(dbName: String, credentials: String): Session {
             val clientUId = ClientUId("MY_ID")
             if (!CService.connect(dbName, clientUId)) throw RuntimeException("Connection to server failed.")

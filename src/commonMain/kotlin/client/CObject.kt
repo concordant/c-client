@@ -21,30 +21,21 @@ package client
 
 import client.utils.ActiveSession
 import client.utils.CObjectUId
+import client.utils.CService
 import client.utils.OperationUId
 import crdtlib.crdt.DeltaCRDT
 
-open class CObject<T> {
+/**
+* Class representing a Concordant object.
+* @property id Concordant object unique identifier.
+* @property readOnly is object openned in read-only mode.
+*/
+open class CObject<T>(private val id: CObjectUId<T>, private val readOnly: Boolean) {
 
     /**
-    * Concordant object unique id
-    */
-    private val id: CObjectUId<T>
-
-    /**
-    * Is openned in read only mode
-    */
-    private val readOnly: Boolean
-
-    /**
-    * The encapsulated CRDT
+    * The encapsulated CRDT.
     */
     protected var crdt: DeltaCRDT<T>? = null
-
-    constructor(oid: CObjectUId<T>, readOnly: Boolean) {
-        this.id = oid
-        this.readOnly = readOnly
-    }
 
     protected fun beforeUpdate(): OperationUId {
         if (this.readOnly) throw RuntimeException("CObject has been opened in read-only mode.")
@@ -64,6 +55,9 @@ open class CObject<T> {
     protected fun afterGetter() {
     }
 
+    /**
+     * Closes this object.
+     */
     fun close() {
     }
 }

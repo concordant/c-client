@@ -23,32 +23,29 @@ import client.utils.CObjectUId
 import client.utils.CollectionUId
 import client.utils.NotificationHandler
 
-class Collection {
+/**
+* This class represents a collection of objects.
+* @property id the collection unique identifier.
+* @property readOnly is the collection open in read-only mode.
+*/
+class Collection(private val id: CollectionUId, private val readOnly: Boolean) {
 
     /**
-    * The collection unique id
-    */
-    private val id: CollectionUId
-
-    /**
-    * Is the collection open in read only mode
-    */
-    private val readOnly: Boolean
-
-    constructor(cid: CollectionUId, readOnly: Boolean) {
-        this.id = cid
-        this.readOnly = readOnly
-    }
-
-    // c_open_read|write<T>
-    fun <T> open(oid: String, readOnly: Boolean, handler: NotificationHandler<T>): T {
+     * Opens an object of the collection.
+     * @param objectId the name of the object.
+     * @param readOnly is the object open in read-only mode.
+     * @param handler currently not used.
+     */
+    fun <T> open(objectId: String, readOnly: Boolean, handler: NotificationHandler<T>): T {
         if (this.readOnly && !readOnly) throw RuntimeException("Collection has been opened in read-only mode.")
 
-        val oid = CObjectUId<T>(this.id, oid)
-        return CObject<T>(oid, readOnly) as T
+        val objectUId = CObjectUId<T>(this.id, objectId)
+        return CObject<T>(objectUId, readOnly) as T
     }
 
-    // c_close_collection
+    /**
+     * Closes this collection.
+     */
     fun close() {
     }
 }

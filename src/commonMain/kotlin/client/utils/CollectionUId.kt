@@ -21,6 +21,6 @@
 package client.utils
 
 /**
-* Collection unique identifiers
+* Collection unique identifier.
 */
 typealias CollectionUId = String
