@@ -20,7 +20,7 @@
 package client.utils
 
 /**
-* Different types of consistency level provided by the Concordant platform
+* Different types of consistency level provided by the Concordant platform.
 */
 enum class ConsistencyLevel {
 

@@ -22,6 +22,6 @@ package client.utils
 import client.Session
 
 /**
-* Global variable(s)
+* Global variable storing a reference to the currently active session.
 */
 var ActiveSession: Session? = null

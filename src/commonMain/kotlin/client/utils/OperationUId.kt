@@ -22,6 +22,6 @@ package client.utils
 import crdtlib.utils.Timestamp
 
 /**
-* Operations unique identifiers
+* Operation unique identifier.
 */
 typealias OperationUId = Timestamp
