@@ -33,19 +33,19 @@ import crdtlib.utils.VersionVector
 class Session {
 
     /**
-    * The client unique identifier
-    */
+     * The client unique identifier
+     */
     private val clientUId: ClientUId
 
     /**
-    * The environment linked to the session
-    */
+     * The environment linked to the session
+     */
     public val environment: SimpleEnvironment
 
     /**
-    * Private constructor.
-    * @param clientUId the client unique identifier.
-    */
+     * Private constructor.
+     * @param clientUId the client unique identifier.
+     */
     private constructor(clientUId: ClientUId) {
         this.clientUId = clientUId
         this.environment = SimpleEnvironment(this.clientUId)
