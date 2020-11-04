@@ -46,6 +46,5 @@ class Collection(private val id: CollectionUId, private val readOnly: Boolean) {
     /**
      * Closes this collection.
      */
-    fun close() {
-    }
+    fun close() { }
 }

@@ -33,8 +33,8 @@ import crdtlib.crdt.DeltaCRDT
 open class CObject<T>(private val id: CObjectUId<T>, private val readOnly: Boolean) {
 
     /**
-    * The encapsulated CRDT.
-    */
+     * The encapsulated CRDT.
+     */
     protected var crdt: DeltaCRDT<T>? = null
 
     protected fun beforeUpdate(): OperationUId {
