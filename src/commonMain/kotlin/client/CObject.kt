@@ -37,9 +37,15 @@ open class CObject<T>(private val id: CObjectUId<T>, private val readOnly: Boole
      */
     protected var crdt: DeltaCRDT<T>? = null
 
+    /**
+     * Is object closed.
+     */
+    private var isClosed: Boolean = false
+
     protected fun beforeUpdate(): OperationUId {
-        if (this.readOnly) throw RuntimeException("CObject has been opened in read-only mode.")
-        if (ActiveSession == null) RuntimeException("Not active session.")
+        if (this.isClosed) throw RuntimeException("This object has been closed.")
+        if (this.readOnly) throw RuntimeException("This object has been opened in read-only mode.")
+
         this.crdt = CService.getObject<T>(this.id)
         return (ActiveSession as Session).environment.tick()
     }
@@ -49,6 +55,8 @@ open class CObject<T>(private val id: CObjectUId<T>, private val readOnly: Boole
     }
 
     protected fun beforeGetter() {
+        if (this.isClosed) throw RuntimeException("This object has been closed.")
+
         this.crdt = CService.getObject<T>(this.id)
     }
 
@@ -59,5 +67,6 @@ open class CObject<T>(private val id: CObjectUId<T>, private val readOnly: Boole
      * Closes this object.
      */
     fun close() {
+        this.isClosed = true
     }
 }

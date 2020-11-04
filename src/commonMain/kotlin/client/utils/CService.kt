@@ -31,14 +31,12 @@ class CService {
             return true
         }
 
-        fun <T> getObject(oid: CObjectUId<T>): DeltaCRDT<T>? {
+        fun <T> getObject(objectUId: CObjectUId<T>): DeltaCRDT<T>? {
             return null
         }
 
-        fun <T> pushObject(oid: CObjectUId<T>, crdt: DeltaCRDT<T>?) {
-        }
+        fun <T> pushObject(objectUId: CObjectUId<T>, crdt: DeltaCRDT<T>?) { }
 
-        fun close(cid: ClientUId) {
-        }
+        fun close(clientUId: ClientUId) { }
     }
 }

@@ -31,20 +31,29 @@ import client.utils.NotificationHandler
 class Collection(private val id: CollectionUId, private val readOnly: Boolean) {
 
     /**
+     * Is this collection closed.
+     */
+    private var isClosed: Boolean = false
+
+    /**
      * Opens an object of the collection.
      * @param objectId the name of the object.
      * @param readOnly is the object open in read-only mode.
      * @param handler currently not used.
      */
     fun <T> open(objectId: String, readOnly: Boolean, handler: NotificationHandler<T>): T {
+        if (this.isClosed) throw RuntimeException("This collection has been closed.")
+
         if (this.readOnly && !readOnly) throw RuntimeException("Collection has been opened in read-only mode.")
 
         val objectUId = CObjectUId<T>(this.id, objectId)
-        return CObject<T>(objectUId, readOnly) as T
+        return PNCounter(objectUId as CObjectUId<PNCounter>, readOnly) as T
     }
 
     /**
      * Closes this collection.
      */
-    fun close() { }
+    fun close() {
+        this.isClosed = true
+    }
 }
