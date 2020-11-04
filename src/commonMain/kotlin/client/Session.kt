@@ -43,9 +43,9 @@ class Session {
     public val environment: SimpleEnvironment
 
     /**
-     * The collection opened within this session.
+     * The collections opened within this session.
      */
-    private var openedCollection: Collection? = null
+    private val openedCollections: MutableMap<CollectionUId, Collection> = mutableMapOf()
 
     /**
      * Is this session closed.
@@ -81,11 +81,19 @@ class Session {
      */
     fun openCollection(collectionUId: CollectionUId, readOnly: Boolean): Collection {
         if (this.isClosed) throw RuntimeException("This session has been closed.")
-        if (this.openedCollection != null) throw RuntimeException("A collection is alredy opened.")
+        if (!this.openedCollections.isEmpty()) throw RuntimeException("A collection is alredy opened.")
 
-        val newCollection = Collection(collectionUId, readOnly)
-        this.openedCollection = newCollection
+        val newCollection = Collection(this, collectionUId, readOnly)
+        this.openedCollections.put(collectionUId, newCollection)
         return newCollection
+    }
+
+    /**
+     * Notifies this session that a collection has been closed.
+     * @param collectionUId the closed collection unique identifier.
+     */
+    internal fun notifyClosedCollection(collectionUId: CollectionUId) {
+        this.openedCollections.remove(collectionUId)
     }
 
     /**
@@ -94,10 +102,15 @@ class Session {
     fun close() {
         if(this.isClosed) return
 
-        this.openedCollection?.close()
-        this.isClosed = true
+        val collections = this.openedCollections.values
+        for (collection in collections) {
+            collection.close()
+        }
+
         ActiveSession = null
         CService.close(this.clientUId)
+
+        this.isClosed = true
     }
 
     companion object {

@@ -23,16 +23,19 @@ import client.utils.ActiveSession
 import io.kotest.assertions.throwables.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.*
+import io.kotest.matchers.nulls.*
 
 class ClientTest : StringSpec({
  
-    "open session should be active session" {
+    "opened session should be active session" {
+        ActiveSession.shouldBeNull()
         val session = Session.connect("mydatabase", "credentials")
         ActiveSession.shouldBe(session)
         session.close()
+        ActiveSession.shouldBeNull()
     }
 
-    "use a closed session" {
+    "use a closed session should fail" {
         val session = Session.connect("mydatabase", "credentials")
         session.close()
         shouldThrow<RuntimeException> {
@@ -40,26 +43,7 @@ class ClientTest : StringSpec({
         }
     }
 
-    "open two collections" {
-        val session = Session.connect("mydatabase", "credentials")
-        session.openCollection("mycollection1", true)
-        shouldThrow<RuntimeException> {
-            session.openCollection("mycollection2", true)
-        }
-        ActiveSession.shouldBe(session)
-        session.close()
-    }
-
-    "open read collection then open write object" {
-        val session = Session.connect("mydatabase", "credentials")
-        val collection = session.openCollection("mycollection", true)
-        shouldThrow<RuntimeException> {
-            collection.open<PNCounter>("mycounter", false, { _, _ -> Unit })
-        }
-        session.close()
-    }
-
-    "use a closed collection" {
+    "use a closed collection should fail" {
         val session = Session.connect("mydatabase", "credentials")
         val collection = session.openCollection("mycollection", true)
         collection.close()
@@ -69,7 +53,7 @@ class ClientTest : StringSpec({
         session.close()
     }
 
-    "use a closed object" {
+    "use a closed object should fail" {
         val session = Session.connect("mydatabase", "credentials")
         val collection = session.openCollection("mycollection", false)
         val cobject = collection.open<PNCounter>("mycounter", false, { _, _ -> Unit })
@@ -80,11 +64,63 @@ class ClientTest : StringSpec({
         session.close()
     }
 
-    "update a read-only object" {
+    "close is done in cascade from session" {
+        val session = Session.connect("mydatabase", "credentials")
+        val collection = session.openCollection("mycollection", false)
+        val cobject = collection.open<PNCounter>("mycounter1", false, { _, _ -> Unit })
+        session.close()
+        shouldThrow<RuntimeException> {
+            collection.open<PNCounter>("mycounter2", false, { _, _ -> Unit })
+        }
+        shouldThrow<RuntimeException> {
+            cobject.increment(12)
+        }
+    }
+
+    "close is done in cascade from collection" {
+        val session = Session.connect("mydatabase", "credentials")
+        val collection = session.openCollection("mycollection", false)
+        val cobject = collection.open<PNCounter>("mycounter1", false, { _, _ -> Unit })
+        collection.close()
+        shouldThrow<RuntimeException> {
+            cobject.increment(12)
+        }
+        session.close()
+    }
+
+    "open a second session should fail" {
+        val session1 = Session.connect("mydatabase1", "credentials")
+        shouldThrow<RuntimeException> {
+            Session.connect("mydatabase2", "credentials")
+        }
+        session1.close()
+    }
+
+    "open a second collection should fail" {
+        val session = Session.connect("mydatabase", "credentials")
+        session.openCollection("mycollection1", true)
+        shouldThrow<RuntimeException> {
+            session.openCollection("mycollection2", true)
+        }
+        ActiveSession.shouldBe(session)
+        session.close()
+    }
+
+    "open read collection then open write object should fail" {
+        val session = Session.connect("mydatabase", "credentials")
+        val collection = session.openCollection("mycollection", true)
+        shouldThrow<RuntimeException> {
+            collection.open<PNCounter>("mycounter", false, { _, _ -> Unit })
+        }
+        session.close()
+    }
+
+    "update a read-only object should fail" {
         val session = Session.connect("mydatabase", "credentials")
         val collection = session.openCollection("mycollection", false)
         val cobject = collection.open<PNCounter>("mycounter", true, { _, _ -> Unit })
         val value = cobject.get()
+        value.shouldBe(0)
         shouldThrow<RuntimeException> {
             cobject.increment(12)
         }
