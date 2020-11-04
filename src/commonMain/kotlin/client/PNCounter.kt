@@ -3,8 +3,11 @@ package client
 import client.utils.CObjectUId
 import crdtlib.crdt.PNCounter
 
-class PNCounter(val objectUId: CObjectUId<client.PNCounter>, val readOnly: Boolean) :
-    CObject<client.PNCounter>(objectUId, readOnly) {
+class PNCounter(
+    val attachedCollection: Collection,
+    val objectUId: CObjectUId<client.PNCounter>,
+    val readOnly: Boolean) :
+    CObject<client.PNCounter>(attachedCollection, objectUId, readOnly) {
 
     // Should be changed in the future
     private val counterCrdt: PNCounter = PNCounter()

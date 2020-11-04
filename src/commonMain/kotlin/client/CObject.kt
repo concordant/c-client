@@ -27,10 +27,14 @@ import crdtlib.crdt.DeltaCRDT
 
 /**
 * Class representing a Concordant object.
+* @property attachedCollection the collection from which this objects depends.
 * @property id Concordant object unique identifier.
 * @property readOnly is object openned in read-only mode.
 */
-open class CObject<T>(private val id: CObjectUId<T>, private val readOnly: Boolean) {
+open class CObject<T>(
+    private val attachedCollection: Collection,
+    private val id: CObjectUId<T>,
+    private val readOnly: Boolean) {
 
     /**
      * The encapsulated CRDT.
@@ -68,5 +72,7 @@ open class CObject<T>(private val id: CObjectUId<T>, private val readOnly: Boole
      */
     fun close() {
         this.isClosed = true
+
+        this.attachedCollection.notifyClosedObject(this.id as CObjectUId<Any>)
     }
 }
