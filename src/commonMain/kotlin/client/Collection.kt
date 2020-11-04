@@ -25,15 +25,24 @@ import client.utils.NotificationHandler
 
 /**
 * This class represents a collection of objects.
+* @property attachedSession the session from which this collection depends.
 * @property id the collection unique identifier.
 * @property readOnly is the collection open in read-only mode.
 */
-class Collection(private val id: CollectionUId, private val readOnly: Boolean) {
+class Collection(
+    private val attachedSession: Session,
+    private val id: CollectionUId,
+    private val readOnly: Boolean) {
 
     /**
      * Is this collection closed.
      */
     private var isClosed: Boolean = false
+
+    /**
+     * The objects opened within this collection.
+     */
+    private val openedObjects: MutableMap<CObjectUId<Any>, CObject<Any>> = mutableMapOf()
 
     /**
      * Opens an object of the collection.
@@ -43,17 +52,33 @@ class Collection(private val id: CollectionUId, private val readOnly: Boolean) {
      */
     fun <T> open(objectId: String, readOnly: Boolean, handler: NotificationHandler<T>): T {
         if (this.isClosed) throw RuntimeException("This collection has been closed.")
-
         if (this.readOnly && !readOnly) throw RuntimeException("Collection has been opened in read-only mode.")
 
         val objectUId = CObjectUId<T>(this.id, objectId)
-        return PNCounter(objectUId as CObjectUId<PNCounter>, readOnly) as T
+        val newObject = PNCounter(this, objectUId as CObjectUId<PNCounter>, readOnly)
+        this.openedObjects.put(objectUId as CObjectUId<Any>, newObject as CObject<Any>)
+        return newObject as T
+    }
+
+    /**
+     * Notifies this collection that an object has been closed.
+     * @param objectUId the closed object unique identifier.
+     */
+    internal fun notifyClosedObject(objectUId: CObjectUId<Any>) {
+        this.openedObjects.remove(objectUId)
     }
 
     /**
      * Closes this collection.
      */
     fun close() {
+        val cobjects = this.openedObjects.values
+        for (cobject in cobjects) {
+            cobject.close()
+        }
+
         this.isClosed = true
+
+        this.attachedSession.notifyClosedCollection(this.id)
     }
 }
