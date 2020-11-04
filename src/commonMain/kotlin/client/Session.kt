@@ -43,6 +43,16 @@ class Session {
     public val environment: SimpleEnvironment
 
     /**
+     * The collection opened within this session.
+     */
+    private var openedCollection: Collection? = null
+
+    /**
+     * Is this session closed.
+     */
+    private var isClosed: Boolean = false
+
+    /**
      * Private constructor.
      * @param clientUId the client unique identifier.
      */
@@ -70,15 +80,24 @@ class Session {
      * @return the corresponding collection.
      */
     fun openCollection(collectionUId: CollectionUId, readOnly: Boolean): Collection {
-        return Collection(collectionUId, readOnly)
+        if (this.isClosed) throw RuntimeException("This session has been closed.")
+        if (this.openedCollection != null) throw RuntimeException("A collection is alredy opened.")
+
+        val newCollection = Collection(collectionUId, readOnly)
+        this.openedCollection = newCollection
+        return newCollection
     }
 
     /**
      * Closes this session.
      */
     fun close() {
-        CService.close(this.clientUId)
+        if(this.isClosed) return
+
+        this.openedCollection?.close()
+        this.isClosed = true
         ActiveSession = null
+        CService.close(this.clientUId)
     }
 
     companion object {
@@ -89,6 +108,8 @@ class Session {
          * @return the client session to communicate with Concordant.
          */
         fun connect(dbName: String, credentials: String): Session {
+            if (ActiveSession != null) throw RuntimeException("Another session is already active.")
+
             val clientUId = ClientUId("MY_ID")
             if (!CService.connect(dbName, clientUId)) throw RuntimeException("Connection to server failed.")
             val session = Session(clientUId)

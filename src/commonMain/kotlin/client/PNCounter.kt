@@ -3,11 +3,12 @@ package client
 import client.utils.CObjectUId
 import crdtlib.crdt.PNCounter
 
-class PNCounter(val oid: CObjectUId<PNCounter>, val readOnly: Boolean) :
-    CObject<PNCounter>(oid, readOnly) {
+class PNCounter(val objectUId: CObjectUId<client.PNCounter>, val readOnly: Boolean) :
+    CObject<client.PNCounter>(objectUId, readOnly) {
 
-    private val counterCrdt: PNCounter
-        get() = this.crdt as PNCounter
+    // Should be changed in the future
+    private val counterCrdt: PNCounter = PNCounter()
+        // get() = this.crdt as PNCounter
 
     fun get(): Int {
         this.beforeGetter()
