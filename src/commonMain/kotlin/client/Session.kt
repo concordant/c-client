@@ -20,9 +20,11 @@
 package client
 
 import client.utils.ActiveSession
+import client.utils.ActiveTransaction
 import client.utils.CService
 import client.utils.CollectionUId
 import client.utils.ConsistencyLevel
+import client.utils.TransactionBody
 import crdtlib.utils.ClientUId
 import crdtlib.utils.SimpleEnvironment
 import crdtlib.utils.VersionVector
@@ -80,6 +82,7 @@ class Session {
      * @return the corresponding collection.
      */
     fun openCollection(collectionUId: CollectionUId, readOnly: Boolean): Collection {
+        if (ActiveTransaction != null) throw RuntimeException("A collection cannot be open within a trnsaction.")
         if (this.isClosed) throw RuntimeException("This session has been closed.")
         if (!this.openedCollections.isEmpty()) throw RuntimeException("A collection is alredy opened.")
 
@@ -94,6 +97,20 @@ class Session {
      */
     internal fun notifyClosedCollection(collectionUId: CollectionUId) {
         this.openedCollections.remove(collectionUId)
+    }
+
+    /**
+     * Creates a transaction.
+     * @param type the desired consistency level.
+     * @param body the transaction body function.
+     */
+    fun transaction(type: ConsistencyLevel, body: TransactionBody): Transaction {
+        if (ActiveTransaction != null) throw RuntimeException("A transaction is already opened.")
+
+        val transaction = Transaction(body)
+        ActiveTransaction = transaction
+        transaction.launch()
+        return transaction
     }
 
     /**

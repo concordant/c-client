@@ -17,17 +17,50 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-package client.utils
+package client
 
-import client.Session
-import client.Transaction
-
-/**
-* Global variable storing a reference to the currently active session.
-*/
-var ActiveSession: Session? = null
+import client.utils.ActiveTransaction
+import client.utils.TransactionBody
 
 /**
-* Global variable storing a reference to the currently active transaction.
+* This class represents a transaction.
 */
-var ActiveTransaction: Transaction? = null
+class Transaction {
+
+    /**
+     * The transaction body function.
+     */
+     private val body: TransactionBody
+
+    /**
+     * Default constructor.
+     * @param body the function body of the transaction.
+     */
+    internal constructor(body: TransactionBody) {
+        this.body = body
+    }
+
+    /**
+     * Launches the transaction.
+     */
+     internal fun launch() {
+         try {
+            this.body()
+            this.commit()
+        } finally {
+            ActiveTransaction = null
+        }
+     }
+
+    /**
+     * Commits this transaction.
+     */
+    fun commit() { }
+
+    /**
+     * Aborts this transaction.
+     */
+    fun abort() {
+        throw RuntimeException("Transaction abort is not supported yet.")
+    }
+}
