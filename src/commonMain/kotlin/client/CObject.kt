@@ -20,6 +20,7 @@
 package client
 
 import client.utils.ActiveSession
+import client.utils.ActiveTransaction
 import client.utils.CObjectUId
 import client.utils.CService
 import client.utils.OperationUId
@@ -27,14 +28,23 @@ import crdtlib.crdt.DeltaCRDT
 
 /**
 * Class representing a Concordant object.
-* @property attachedCollection the collection from which this objects depends.
-* @property id Concordant object unique identifier.
-* @property readOnly is object openned in read-only mode.
 */
-open class CObject<T>(
-    private val attachedCollection: Collection,
-    private val id: CObjectUId<T>,
-    private val readOnly: Boolean) {
+open class CObject<T> {
+
+    /**
+     * The collection from which this objects depends.
+     */
+    private val attachedCollection: Collection
+
+    /**
+     * The Concordant object unique identifier.
+     */
+    private val id: CObjectUId<T>
+
+    /**
+     * Is object openned in read-only mode.
+     */
+    private val readOnly: Boolean
 
     /**
      * The encapsulated CRDT.
@@ -46,7 +56,20 @@ open class CObject<T>(
      */
     private var isClosed: Boolean = false
 
+    /**
+     * Default constructor.
+     * @param attachedCollection the collection from which this objects depends.
+     * @param id Concordant object unique identifier.
+     * @param readOnly is object openned in read-only mode.
+     */
+    internal constructor(attachedCollection: Collection, id: CObjectUId<T>, readOnly: Boolean) {
+        this.attachedCollection = attachedCollection
+        this.id = id
+        this.readOnly = readOnly
+    }
+
     protected fun beforeUpdate(): OperationUId {
+        if (ActiveTransaction == null) throw RuntimeException("Object function should be call within a transaction.")
         if (this.isClosed) throw RuntimeException("This object has been closed.")
         if (this.readOnly) throw RuntimeException("This object has been opened in read-only mode.")
 
@@ -59,6 +82,7 @@ open class CObject<T>(
     }
 
     protected fun beforeGetter() {
+        if (ActiveTransaction == null) throw RuntimeException("Object function should be call within a transaction.")
         if (this.isClosed) throw RuntimeException("This object has been closed.")
 
         this.crdt = CService.getObject<T>(this.id)

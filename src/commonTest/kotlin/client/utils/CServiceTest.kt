@@ -28,7 +28,7 @@ class CServiceTest : StringSpec({
     
     "connect to express server" {
         val client = HttpClient()
-        val result = client.get<String>("http://127.0.0.1:50000/")
+        val result = client.get<String>("http://127.0.0.1:4000/")
         result.shouldBe("Hello world!!")
     }
 })
