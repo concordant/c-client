@@ -19,15 +19,7 @@
 
 package client.utils
 
-import client.Session
-import client.Transaction
-
 /**
-* Global variable storing a reference to the currently active session.
+* The function type accepted for a transaction body.
 */
-var ActiveSession: Session? = null
-
-/**
-* Global variable storing a reference to the currently active transaction.
-*/
-var ActiveTransaction: Transaction? = null
+typealias TransactionBody = () -> Unit

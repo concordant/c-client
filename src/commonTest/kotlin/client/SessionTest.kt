@@ -20,6 +20,7 @@
 package client
 
 import client.utils.ActiveSession
+import client.utils.ConsistencyLevel
 import io.kotest.assertions.throwables.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.*
@@ -53,13 +54,16 @@ class ClientTest : StringSpec({
         session.close()
     }
 
+
     "use a closed object should fail" {
         val session = Session.connect("mydatabase", "credentials")
         val collection = session.openCollection("mycollection", false)
         val cobject = collection.open<PNCounter>("mycounter", false, { _, _ -> Unit })
         cobject.close()
         shouldThrow<RuntimeException> {
-            cobject.increment(12)
+            session.transaction(ConsistencyLevel.RC) {
+                cobject.increment(12)
+            }
         }
         session.close()
     }
@@ -73,7 +77,9 @@ class ClientTest : StringSpec({
             collection.open<PNCounter>("mycounter2", false, { _, _ -> Unit })
         }
         shouldThrow<RuntimeException> {
-            cobject.increment(12)
+            session.transaction(ConsistencyLevel.RC) {
+                cobject.increment(12)
+            }
         }
     }
 
@@ -83,7 +89,9 @@ class ClientTest : StringSpec({
         val cobject = collection.open<PNCounter>("mycounter1", false, { _, _ -> Unit })
         collection.close()
         shouldThrow<RuntimeException> {
-            cobject.increment(12)
+            session.transaction(ConsistencyLevel.RC) {
+                cobject.increment(12)
+            }
         }
         session.close()
     }
@@ -106,6 +114,17 @@ class ClientTest : StringSpec({
         session.close()
     }
 
+    "open a transaction in a transaction should fail" {
+        val session = Session.connect("mydatabase", "credentials")
+        shouldThrow<RuntimeException> {
+            session.transaction(ConsistencyLevel.RC) {
+                session.transaction(ConsistencyLevel.RC) {
+                }
+            }
+        }
+        session.close()
+    }
+
     "open read collection then open write object should fail" {
         val session = Session.connect("mydatabase", "credentials")
         val collection = session.openCollection("mycollection", true)
@@ -114,15 +133,54 @@ class ClientTest : StringSpec({
         }
         session.close()
     }
+    
+    "open a collection within a transaction should fail" {
+        val session = Session.connect("mydatabase", "credentials")
+        shouldThrow<RuntimeException> {
+            session.transaction(ConsistencyLevel.RC) {
+                session.openCollection("mycollection", true)
+            }
+        }
+        session.close()
+    }
+    
+    "open an object within a transaction should fail" {
+        val session = Session.connect("mydatabase", "credentials")
+        val collection = session.openCollection("mycollection", true)
+        shouldThrow<RuntimeException> {
+            session.transaction(ConsistencyLevel.RC) {
+                collection.open<PNCounter>("mycounter", false, { _, _ -> Unit })
+            }
+        }
+        session.close()
+    }
+    
+    "operation on an object outside a transaction should fail" {
+        val session = Session.connect("mydatabase", "credentials")
+        val collection = session.openCollection("mycollection", false)
+        val cobject = collection.open<PNCounter>("mycounter", false, { _, _ -> Unit })
+        shouldThrow<RuntimeException> {
+            cobject.get()
+        }
+        shouldThrow<RuntimeException> {
+            cobject.increment(12)
+        }
+        session.close()
+    }
 
     "update a read-only object should fail" {
         val session = Session.connect("mydatabase", "credentials")
         val collection = session.openCollection("mycollection", false)
         val cobject = collection.open<PNCounter>("mycounter", true, { _, _ -> Unit })
-        val value = cobject.get()
+        var value = 1 
+        session.transaction(ConsistencyLevel.RC) {
+            value = cobject.get()
+        }
         value.shouldBe(0)
         shouldThrow<RuntimeException> {
-            cobject.increment(12)
+            session.transaction(ConsistencyLevel.RC) {
+                cobject.increment(12)
+            }
         }
         session.close()
     }

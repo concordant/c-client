@@ -19,20 +19,30 @@
 
 package client
 
+import client.utils.ActiveTransaction
 import client.utils.CObjectUId
 import client.utils.CollectionUId
 import client.utils.NotificationHandler
 
 /**
 * This class represents a collection of objects.
-* @property attachedSession the session from which this collection depends.
-* @property id the collection unique identifier.
-* @property readOnly is the collection open in read-only mode.
 */
-class Collection(
-    private val attachedSession: Session,
-    private val id: CollectionUId,
-    private val readOnly: Boolean) {
+class Collection {
+
+    /**
+     * The session from which this collection depends.
+     */
+    private val attachedSession: Session
+
+    /**
+     * The collection unique identifier.
+     */
+    private val id: CollectionUId
+
+    /**
+     * Is the collection open in read-only mode.
+     */
+    private val readOnly: Boolean
 
     /**
      * Is this collection closed.
@@ -45,12 +55,25 @@ class Collection(
     private val openedObjects: MutableMap<CObjectUId<Any>, CObject<Any>> = mutableMapOf()
 
     /**
+     * Default constructor.
+     * @param attachedSession the session from which this collection depends.
+     * @param id the collection unique identifier.
+     * @param readOnly is the collection open in read-only mode.
+     */
+    internal constructor(attachedSession: Session, id: CollectionUId, readOnly: Boolean) {
+        this.attachedSession = attachedSession
+        this.id = id
+        this.readOnly = readOnly
+    }
+
+    /**
      * Opens an object of the collection.
      * @param objectId the name of the object.
      * @param readOnly is the object open in read-only mode.
      * @param handler currently not used.
      */
     fun <T> open(objectId: String, readOnly: Boolean, handler: NotificationHandler<T>): T {
+        if (ActiveTransaction != null) throw RuntimeException("An object cannot be open within a trnsaction.")
         if (this.isClosed) throw RuntimeException("This collection has been closed.")
         if (this.readOnly && !readOnly) throw RuntimeException("Collection has been opened in read-only mode.")
 
