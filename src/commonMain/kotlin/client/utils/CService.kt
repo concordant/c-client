@@ -27,7 +27,7 @@ class CService {
 
     companion object {
 
-        fun connect(dbName: String, cid: ClientUId): Boolean {
+        fun connect(dbName: String, clientUId: ClientUId): Boolean {
             return true
         }
 
