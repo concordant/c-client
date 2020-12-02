@@ -79,7 +79,7 @@ class Collection {
 
         val objectUId = CObjectUId<T>(this.id, objectId)
         val newObject = PNCounter(this, objectUId as CObjectUId<PNCounter>, readOnly)
-        this.openedObjects.put(objectUId as CObjectUId<Any>, newObject as CObject<Any>)
+        this.openedObjects[objectUId as CObjectUId<Any>] = newObject as CObject<Any>
         return newObject as T
     }
 
