@@ -82,7 +82,7 @@ class Session {
      * @return the corresponding collection.
      */
     fun openCollection(collectionUId: CollectionUId, readOnly: Boolean): Collection {
-        if (ActiveTransaction != null) throw RuntimeException("A collection cannot be open within a trnsaction.")
+        if (ActiveTransaction != null) throw RuntimeException("A collection cannot be open within a transaction.")
         if (this.isClosed) throw RuntimeException("This session has been closed.")
         if (!this.openedCollections.isEmpty()) throw RuntimeException("A collection is alredy opened.")
 
@@ -134,7 +134,7 @@ class Session {
         /**
          * Connects a client to Concordant platform.
          * @param dbName the database name that should be accessed.
-         * @param credentials the crediantials provided by the client.
+         * @param credentials the credentials provided by the client.
          * @return the client session to communicate with Concordant.
          */
         fun connect(dbName: String, credentials: String): Session {
