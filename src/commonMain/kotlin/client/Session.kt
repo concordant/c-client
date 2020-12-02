@@ -84,10 +84,10 @@ class Session {
     fun openCollection(collectionUId: CollectionUId, readOnly: Boolean): Collection {
         if (ActiveTransaction != null) throw RuntimeException("A collection cannot be open within a transaction.")
         if (this.isClosed) throw RuntimeException("This session has been closed.")
-        if (this.openedCollections.isNotEmpty()) throw RuntimeException("A collection is alredy opened.")
+        if (this.openedCollections.isNotEmpty()) throw RuntimeException("A collection is already opened.")
 
         val newCollection = Collection(this, collectionUId, readOnly)
-        this.openedCollections.put(collectionUId, newCollection)
+        this.openedCollections[collectionUId] = newCollection
         return newCollection
     }
 
