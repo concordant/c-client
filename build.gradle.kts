@@ -24,6 +24,7 @@ plugins {
 repositories {
     jcenter()
     mavenCentral()
+    mavenLocal()
 }
 
 kotlin {
@@ -44,44 +45,47 @@ kotlin {
 
         commonMain {
             dependencies {
-                implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+                implementation("io.concordant:c-crdtlib-metadata:0.0.6")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
             }
         }
         
         commonTest {
             dependencies {
-                implementation("io.ktor:ktor-client-core:1.4.1")
+                implementation("io.concordant:c-crdtlib-metadata:0.0.6")
                 implementation("io.kotest:kotest-assertions-core:4.3.0")
-                implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+                implementation("io.ktor:ktor-client-core:1.4.1")
             }
         }
 
 
         val jvmMain by getting {
             dependencies {
-                implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+                implementation("io.concordant:c-crdtlib-jvm:0.0.6")
+                implementation("io.ktor:ktor-client-cio-jvm:1.4.1")
             }
         }
 
         val jvmTest by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-cio-jvm:1.4.1")
+                implementation("io.concordant:c-crdtlib-jvm:0.0.6")
                 implementation("io.kotest:kotest-runner-junit5-jvm:4.3.0")
-                implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+                implementation("io.ktor:ktor-client-cio-jvm:1.4.1")
             }
         }
 
         val nodeJsMain by getting {
             dependencies {
-                implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+                implementation("io.concordant:c-crdtlib-nodejs:0.0.6")
+                implementation("io.ktor:ktor-client-js:1.4.1")
             }
         }
 
         val nodeJsTest by getting {
             dependencies {
+                implementation("io.concordant:c-crdtlib-nodejs:0.0.6")
                 implementation("io.ktor:ktor-client-js:1.4.1")
                 implementation("io.kotest:kotest-core-js:4.2.0.RC2")
-                implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
             }
         }
     }
