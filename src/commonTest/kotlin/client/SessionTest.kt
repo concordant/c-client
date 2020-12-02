@@ -54,7 +54,6 @@ class ClientTest : StringSpec({
         session.close()
     }
 
-
     "use a closed object should fail" {
         val session = Session.connect("mydatabase", "credentials")
         val collection = session.openCollection("mycollection", false)

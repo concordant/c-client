@@ -73,7 +73,7 @@ class Collection {
      * @param handler currently not used.
      */
     fun <T> open(objectId: String, readOnly: Boolean, handler: NotificationHandler<T>): T {
-        if (ActiveTransaction != null) throw RuntimeException("An object cannot be open within a trnsaction.")
+        if (ActiveTransaction != null) throw RuntimeException("An object cannot be open within a transaction.")
         if (this.isClosed) throw RuntimeException("This collection has been closed.")
         if (this.readOnly && !readOnly) throw RuntimeException("Collection has been opened in read-only mode.")
 
