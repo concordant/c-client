@@ -78,7 +78,7 @@ open class CObject<T> {
     }
 
     protected fun afterUpdate() {
-        CService.pushObject<T>(this.id, this.crdt)
+        CService.updateObject<T>(this.id, this.crdt)
     }
 
     protected fun beforeGetter() {
