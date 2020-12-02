@@ -42,7 +42,7 @@ open class CObject<T> {
     private val id: CObjectUId<T>
 
     /**
-     * Is object openned in read-only mode.
+     * Is object opened in read-only mode.
      */
     private val readOnly: Boolean
 
@@ -60,7 +60,7 @@ open class CObject<T> {
      * Default constructor.
      * @param attachedCollection the collection from which this objects depends.
      * @param id Concordant object unique identifier.
-     * @param readOnly is object openned in read-only mode.
+     * @param readOnly is object opened in read-only mode.
      */
     internal constructor(attachedCollection: Collection, id: CObjectUId<T>, readOnly: Boolean) {
         this.attachedCollection = attachedCollection
