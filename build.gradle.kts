@@ -24,7 +24,17 @@ plugins {
 repositories {
     jcenter()
     mavenCentral()
-    mavenLocal()
+    maven {
+        url = uri("https://gitlab.inria.fr/api/v4/projects/18591/packages/maven")
+        credentials(HttpHeaderCredentials::class) {
+            name = "Deploy-Token"
+            val gitLabPrivateToken: String by project
+            value = gitLabPrivateToken
+        }
+        authentication {
+            create<HttpHeaderAuthentication>("header")
+        }
+    }
 }
 
 kotlin {
@@ -45,14 +55,13 @@ kotlin {
 
         commonMain {
             dependencies {
-                implementation("io.concordant:c-crdtlib-metadata:0.0.6")
+                implementation("concordant:c-crdtlib:0.0.7-1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
             }
         }
-        
+
         commonTest {
             dependencies {
-                implementation("io.concordant:c-crdtlib-metadata:0.0.6")
                 implementation("io.kotest:kotest-assertions-core:4.3.0")
                 implementation("io.ktor:ktor-client-core:1.4.1")
             }
@@ -61,14 +70,12 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation("io.concordant:c-crdtlib-jvm:0.0.6")
                 implementation("io.ktor:ktor-client-cio-jvm:1.4.1")
             }
         }
 
         val jvmTest by getting {
             dependencies {
-                implementation("io.concordant:c-crdtlib-jvm:0.0.6")
                 implementation("io.kotest:kotest-runner-junit5-jvm:4.3.0")
                 implementation("io.ktor:ktor-client-cio-jvm:1.4.1")
             }
@@ -76,14 +83,12 @@ kotlin {
 
         val nodeJsMain by getting {
             dependencies {
-                implementation("io.concordant:c-crdtlib-nodejs:0.0.6")
                 implementation("io.ktor:ktor-client-js:1.4.1")
             }
         }
 
         val nodeJsTest by getting {
             dependencies {
-                implementation("io.concordant:c-crdtlib-nodejs:0.0.6")
                 implementation("io.ktor:ktor-client-js:1.4.1")
                 implementation("io.kotest:kotest-core-js:4.2.0.RC2")
             }
