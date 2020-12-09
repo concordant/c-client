@@ -28,7 +28,8 @@ repositories {
         url = uri("https://gitlab.inria.fr/api/v4/projects/18591/packages/maven")
         credentials(HttpHeaderCredentials::class) {
             name = "Deploy-Token"
-            value = "zUyZ3P8zTfTu8gWisrue"
+            val gitLabPrivateToken: String by project
+            value = gitLabPrivateToken
         }
         authentication {
             create<HttpHeaderAuthentication>("header")
