@@ -35,10 +35,10 @@ repositories {
             create<HttpHeaderAuthentication>("header")
         }
     }
+    maven(url = "https://jitpack.io")
 }
 
 kotlin {
-
     jvm() {
     }
 
@@ -47,26 +47,25 @@ kotlin {
     }
 
     sourceSets {
-        
         all {
             languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
         }
 
-
         commonMain {
             dependencies {
-                implementation("concordant:c-crdtlib:0.0.7-1")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+                implementation("concordant:c-crdtlib:1.0.0")
+                implementation("io.ktor:ktor-client-core:1.4.1")
             }
         }
 
         commonTest {
             dependencies {
-                implementation("io.kotest:kotest-assertions-core:4.3.0")
+                implementation("io.kotest:kotest-property:4.3.1")
+                implementation("io.kotest:kotest-assertions-core:4.3.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
                 implementation("io.ktor:ktor-client-core:1.4.1")
             }
         }
-
 
         val jvmMain by getting {
             dependencies {
@@ -76,7 +75,7 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
-                implementation("io.kotest:kotest-runner-junit5-jvm:4.3.0")
+                implementation("io.kotest:kotest-runner-junit5-jvm:4.3.1")
                 implementation("io.ktor:ktor-client-cio-jvm:1.4.1")
             }
         }
@@ -89,8 +88,8 @@ kotlin {
 
         val nodeJsTest by getting {
             dependencies {
+                implementation("io.kotest:kotest-framework-engine:4.3.1")
                 implementation("io.ktor:ktor-client-js:1.4.1")
-                implementation("io.kotest:kotest-core-js:4.2.0.RC2")
             }
         }
     }
