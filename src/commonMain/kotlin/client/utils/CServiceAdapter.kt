@@ -66,13 +66,8 @@ class CService {
             }
         }
 
-        suspend fun close(clientUId: ClientUId) {
-            val client = HttpClient()
-            client.post<String>{
-                url("http://127.0.0.1:4000/api/delete-app")
-                contentType(ContentType.Application.Json)
-                body = """{"appName":"myapp"}"""
-            }
+        suspend fun close(dbName: String): Boolean{
+            return true
         }
     }
 }
