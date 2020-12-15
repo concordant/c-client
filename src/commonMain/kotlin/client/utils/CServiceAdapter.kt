@@ -24,8 +24,15 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 
+/**
+ *
+ */
 class CServiceAdapter {
     companion object {
+        /**
+         * Connection to the database
+         * @param dbName database name
+         */
         suspend fun connect(dbName: String): Boolean {
             val client = HttpClient()
             val resp = client.post<String> {
@@ -37,6 +44,10 @@ class CServiceAdapter {
             return resp == "\"OK\""
         }
 
+        /**
+         * Get all objects of the database
+         * @param dbName database name
+         */
         suspend fun getObjects(dbName: String): String {
             val client = HttpClient()
             val resp = client.post<String> {
@@ -48,6 +59,11 @@ class CServiceAdapter {
             return resp
         }
 
+        /**
+         * Get a specific object of the database
+         * @param dbName database name
+         * @param myid object id
+         */
         suspend fun getObject(dbName: String, myid: String): String {
             val client = HttpClient()
             val resp = client.post<String> {
@@ -59,6 +75,12 @@ class CServiceAdapter {
             return resp
         }
 
+        /**
+         * Update the object
+         * @param dbName database name
+         * @param myid object id
+         * @param mydoc object content
+         */
         suspend fun updateObject(dbName: String, myid: String, mydoc: String): Boolean {
             val client = HttpClient()
             val resp = client.post<String> {
@@ -70,6 +92,11 @@ class CServiceAdapter {
             return resp == "\"OK\""
         }
 
+        /**
+         * Get a CRDT from the database
+         * @param dbName database name
+         * @param objectUId crdt id
+         */
         suspend fun getObject(dbName: String, objectUId: CObjectUId): DeltaCRDT {
             val client = HttpClient()
             val crdtJson = client.post<String>{
@@ -81,6 +108,12 @@ class CServiceAdapter {
             return DeltaCRDT.fromJson(crdtJson)
         }
 
+        /**
+         * Update a CRDT
+         * @param dbName database name
+         * @param objectUId CRDT id
+         * @param crdt new crdt
+         */
         suspend fun updateObject(dbName: String, objectUId: CObjectUId, crdt: DeltaCRDT): Boolean{
             val client = HttpClient()
             val crdtJson = crdt.toJson()
@@ -93,6 +126,10 @@ class CServiceAdapter {
             return resp == "\"OK\""
         }
 
+        /**
+         * Close the connection to the database
+         * @param dbName database name
+         */
         suspend fun close(dbName: String): Boolean{
             return true
         }
