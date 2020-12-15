@@ -19,51 +19,45 @@
 
 package client.utils
 
-import client.utils.CObjectUId
 import crdtlib.crdt.DeltaCRDT
-import crdtlib.utils.ClientUId
-import io.ktor.client.HttpClient
-import io.ktor.client.request.body
-import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.url
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
-import kotlinx.coroutines.runBlocking
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.http.*
 
-class CService {
-
+class CServiceAdapter {
     companion object {
-
-        suspend fun connect(dbName: String, clientUId: ClientUId): Boolean {
-            lateinit var response: String
+        suspend fun connect(dbName: String): Boolean {
             val client = HttpClient()
-            response = client.post<String>{
+            val resp = client.post<String> {
                 url("http://127.0.0.1:4000/api/create-app")
                 contentType(ContentType.Application.Json)
                 body = """{"appName":"$dbName"}"""
             }
-            return response == "OK"
+            client.close()
+            return resp == "\"OK\""
         }
 
-        suspend fun <T> getObject(objectUId: CObjectUId<T>): DeltaCRDT {
+        suspend fun getObject(dbName: String, objectUId: CObjectUId): DeltaCRDT {
             val client = HttpClient()
-            val crdtJson = client.get<String>{
+            val crdtJson = client.post<String>{
                 url("http://127.0.0.1:4000/api/get-object")
                 contentType(ContentType.Application.Json)
-                body = """{"appName":"myapp","id":"$objectUId.name"}"""
+                body = """{"appName":"$dbName","id":"$objectUId.name"}"""
             }
-            return DeltaCRDT.fromJson(crdtJson) as T
+            client.close()
+            return DeltaCRDT.fromJson(crdtJson)
         }
 
-        suspend fun <T> updateObject(objectUId: CObjectUId<T>, crdt: DeltaCRDT) {
+        suspend fun updateObject(dbName: String, objectUId: CObjectUId, crdt: DeltaCRDT): Boolean{
             val client = HttpClient()
             val crdtJson = crdt.toJson()
-            client.post<String>{
+            val resp = client.post<String>{
                 url("http://127.0.0.1:4000/api/update-object")
                 contentType(ContentType.Application.Json)
-                body = """{"appName":"myapp","id":"$objectUId.name", "document":"$crdtJson"}"""
+                body = """{"appName":"$dbName","id":"$objectUId.name", "document":"$crdtJson"}"""
             }
+            client.close()
+            return resp == "\"OK\""
         }
 
         suspend fun close(dbName: String): Boolean{
