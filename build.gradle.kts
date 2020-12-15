@@ -35,6 +35,7 @@ repositories {
             create<HttpHeaderAuthentication>("header")
         }
     }
+    maven(url = "https://jitpack.io")
 }
 
 kotlin {
@@ -47,16 +48,17 @@ kotlin {
     }
 
     sourceSets {
-        
+
         all {
             languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
         }
 
 
+
         commonMain {
             dependencies {
                 implementation("concordant:c-crdtlib:0.0.7-1")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+                implementation("io.ktor:ktor-client-core:1.4.1")
             }
         }
 
@@ -64,6 +66,7 @@ kotlin {
             dependencies {
                 implementation("io.kotest:kotest-assertions-core:4.3.0")
                 implementation("io.ktor:ktor-client-core:1.4.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
             }
         }
 
