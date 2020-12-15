@@ -19,12 +19,10 @@
 
 package client.utils
 
-import client.utils.runTest
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.*
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.string.shouldMatch
-import kotlinx.coroutines.*
+import kotlinx.coroutines.delay
 
 class CServiceAdapterTest : StringSpec({
     "connect to c-service create, write twice, read and delete" {
