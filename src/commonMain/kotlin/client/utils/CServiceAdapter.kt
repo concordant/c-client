@@ -35,51 +35,43 @@ class CService {
 
     companion object {
 
-        fun connect(dbName: String, clientUId: ClientUId): Boolean {
+        suspend fun connect(dbName: String, clientUId: ClientUId): Boolean {
             lateinit var response: String
-            runBlocking {
-                val client = HttpClient()
-                response = client.post<String>{
-                    url("http://127.0.0.1:4000/api/create-app")
-                    contentType(ContentType.Application.Json)
-                    body = """{"appName":"$dbName"}"""
-                }
+            val client = HttpClient()
+            response = client.post<String>{
+                url("http://127.0.0.1:4000/api/create-app")
+                contentType(ContentType.Application.Json)
+                body = """{"appName":"$dbName"}"""
             }
             return response == "OK"
         }
 
-        fun <T> getObject(objectUId: CObjectUId<T>): DeltaCRDT {
-            runBlocking {
-                val client = HttpClient()
-                val crdtJson = client.get<String>{
-                    url("http://127.0.0.1:4000/api/get-object")
-                    contentType(ContentType.Application.Json)
-                    body = """{"appName":"myapp","id":"$objectUId.name"}"""
-                }
+        suspend fun <T> getObject(objectUId: CObjectUId<T>): DeltaCRDT {
+            val client = HttpClient()
+            val crdtJson = client.get<String>{
+                url("http://127.0.0.1:4000/api/get-object")
+                contentType(ContentType.Application.Json)
+                body = """{"appName":"myapp","id":"$objectUId.name"}"""
             }
             return DeltaCRDT.fromJson(crdtJson) as T
         }
 
-        fun <T> updateObject(objectUId: CObjectUId<T>, crdt: DeltaCRDT) {
-            runBlocking {
-                val client = HttpClient()
-                val crdtJson = crdt.toJson()
-                client.post<String>{
-                    url("http://127.0.0.1:4000/api/update-object")
-                    contentType(ContentType.Application.Json)
-                    body = """{"appName":"myapp","id":"$objectUId.name", "document":"$crdtJson"}"""
-                }
+        suspend fun <T> updateObject(objectUId: CObjectUId<T>, crdt: DeltaCRDT) {
+            val client = HttpClient()
+            val crdtJson = crdt.toJson()
+            client.post<String>{
+                url("http://127.0.0.1:4000/api/update-object")
+                contentType(ContentType.Application.Json)
+                body = """{"appName":"myapp","id":"$objectUId.name", "document":"$crdtJson"}"""
             }
         }
 
-        fun close(clientUId: ClientUId) {
-            runBlocking {
-                val client = HttpClient()
-                client.post<String>{
-                    url("http://127.0.0.1:4000/api/delete-app")
-                    contentType(ContentType.Application.Json)
-                    body = """{"appName":"myapp"}"""
-                }
+        suspend fun close(clientUId: ClientUId) {
+            val client = HttpClient()
+            client.post<String>{
+                url("http://127.0.0.1:4000/api/delete-app")
+                contentType(ContentType.Application.Json)
+                body = """{"appName":"myapp"}"""
             }
         }
     }
