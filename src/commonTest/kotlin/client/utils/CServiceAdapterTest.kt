@@ -19,43 +19,27 @@
 
 package client.utils
 
+import client.utils.runTest
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.*
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.client.statement.*
-import io.ktor.client.features.*
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.string.shouldMatch
+import kotlinx.coroutines.*
 
-class CServiceTest : StringSpec({
-    
-    "connect to c-service create, write. read, and delete" {
-        val client = HttpClient()
-        client.post<String>{
-            url("http://127.0.0.1:4000/api/create-app")
-            contentType(ContentType.Application.Json)
-            body = """{"appName":"myapp"}"""
-        }.shouldBe("OK")
-        client.post<String>{
-            url("http://127.0.0.1:4000/api/update-object")
-            contentType(ContentType.Application.Json)
-            body = """{"appName":"myapp","id":"myid","document":"{\"key\":\"value1\"}"}"""
-        }.shouldBe("OK")
-        client.post<String>{
-            url("http://127.0.0.1:4000/api/update-object")
-            contentType(ContentType.Application.Json)
-            body = """{"appName":"myapp","id":"myid","document":"{\"key\":\"value2\"}"}"""
-        }.shouldBe("OK")
-        client.post<String>{
-            url("http://127.0.0.1:4000/api/app-object")
-            contentType(ContentType.Application.Json)
-            body = """{"appName":"myapp","id":"myid"}"""
-        }.shouldBe("""{\"key\":\"value2\"}""")
-        client.post<String>{
-            url("http://127.0.0.1:4000/api/delete-app")
-            contentType(ContentType.Application.Json)
-            body = """{"appName":"myapp"}"""
-        }.shouldBe("OK")
-        client.close()
+class CServiceAdapterTest : StringSpec({
+    "connect to c-service create, write twice, read and delete" {
+        CServiceAdapter.connect("myapp").shouldBeTrue()
+
+        CServiceAdapter.updateObject("myapp", "myid", """{\"key\":\"value1\"}""")
+        delay(500)
+        val regex1 = """\[\"\{\\\"_id\\\":\\\"myid\\\",\\\"_rev\\\":\\\"(\d+)-(\w+)\\\",\\\"key\\\":\\\"value1\\\"\}\"\]""".toRegex()
+        CServiceAdapter.getObjects("myapp").shouldMatch(regex1)
+
+        delay(500)
+
+        CServiceAdapter.updateObject("myapp", "myid", """{\"key\":\"value2\"}""")
+        delay(500)
+        val regex2 = """\"\{\\\"_id\\\":\\\"myid\\\",\\\"_rev\\\":\\\"(\d+)-(\w+)\\\",\\\"key\\\":\\\"value2\\\"\}\"""".toRegex()
+        CServiceAdapter.getObject("myapp", "myid").shouldMatch(regex2)
     }
 })
