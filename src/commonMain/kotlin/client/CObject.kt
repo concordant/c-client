@@ -22,7 +22,7 @@ package client
 import client.utils.ActiveSession
 import client.utils.ActiveTransaction
 import client.utils.CObjectUId
-import client.utils.CService
+import client.utils.CServiceAdapter
 import client.utils.OperationUId
 import crdtlib.crdt.DeltaCRDT
 
@@ -73,19 +73,19 @@ open class CObject<T> {
         if (this.isClosed) throw RuntimeException("This object has been closed.")
         if (this.readOnly) throw RuntimeException("This object has been opened in read-only mode.")
 
-        this.crdt = CService.getObject<T>(this.id)
+        this.crdt = CServiceAdapter.getObject<T>(this.id)
         return (ActiveSession as Session).environment.tick()
     }
 
     protected fun afterUpdate() {
-        CService.updateObject<T>(this.id, this.crdt)
+        CServiceAdapter.updateObject<T>(this.id, this.crdt)
     }
 
     protected fun beforeGetter() {
         if (ActiveTransaction == null) throw RuntimeException("Object function should be call within a transaction.")
         if (this.isClosed) throw RuntimeException("This object has been closed.")
 
-        this.crdt = CService.getObject<T>(this.id)
+        this.crdt = CServiceAdapter.getObject<T>(this.id)
     }
 
     protected fun afterGetter() {

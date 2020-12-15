@@ -21,7 +21,7 @@ package client
 
 import client.utils.ActiveSession
 import client.utils.ActiveTransaction
-import client.utils.CService
+import client.utils.CServiceAdapter
 import client.utils.CollectionUId
 import client.utils.ConsistencyLevel
 import client.utils.TransactionBody
@@ -125,7 +125,7 @@ class Session {
         }
 
         ActiveSession = null
-        CService.close(this.clientUId)
+        CServiceAdapter.close(this.clientUId)
 
         this.isClosed = true
     }
@@ -141,7 +141,7 @@ class Session {
             if (ActiveSession != null) throw RuntimeException("Another session is already active.")
 
             val clientUId = ClientUId("MY_ID")
-            if (!CService.connect(dbName, clientUId)) throw RuntimeException("Connection to server failed.")
+            if (!CServiceAdapter.connect(dbName, clientUId)) throw RuntimeException("Connection to server failed.")
             val session = Session(clientUId)
             ActiveSession = session
             return session
