@@ -37,6 +37,39 @@ class CServiceAdapter {
             return resp == "\"OK\""
         }
 
+        suspend fun getObjects(dbName: String): String {
+            val client = HttpClient()
+            val resp = client.post<String> {
+                url("http://127.0.0.1:4000/api/get-objects")
+                contentType(ContentType.Application.Json)
+                body = """{"appName":"$dbName"}"""
+            }
+            client.close()
+            return resp
+        }
+
+        suspend fun getObject(dbName: String, myid: String): String {
+            val client = HttpClient()
+            val resp = client.post<String> {
+                url("http://127.0.0.1:4000/api/get-object")
+                contentType(ContentType.Application.Json)
+                body = """{"appName":"$dbName","id":"$myid"}"""
+            }
+            client.close()
+            return resp
+        }
+
+        suspend fun updateObject(dbName: String, myid: String, mydoc: String): Boolean {
+            val client = HttpClient()
+            val resp = client.post<String> {
+                url("http://127.0.0.1:4000/api/update-object")
+                contentType(ContentType.Application.Json)
+                body = """{"appName":"$dbName","id":"$myid", "document":"$mydoc"}"""
+            }
+            client.close()
+            return resp == "\"OK\""
+        }
+
         suspend fun getObject(dbName: String, objectUId: CObjectUId): DeltaCRDT {
             val client = HttpClient()
             val crdtJson = client.post<String>{
