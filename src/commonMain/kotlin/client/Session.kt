@@ -125,7 +125,9 @@ class Session {
         }
 
         ActiveSession = null
-        CServiceAdapter.close(this.clientUId)
+        coroutineBlocking {
+            CServiceAdapter.close("myapp")
+        }
 
         this.isClosed = true
     }
@@ -141,7 +143,9 @@ class Session {
             if (ActiveSession != null) throw RuntimeException("Another session is already active.")
 
             val clientUId = ClientUId("MY_ID")
-            if (!CServiceAdapter.connect(dbName, clientUId)) throw RuntimeException("Connection to server failed.")
+            coroutineBlocking {
+                if (!CServiceAdapter.connect(dbName)) throw RuntimeException("Connection to server failed.")
+            }
             val session = Session(clientUId)
             ActiveSession = session
             return session
