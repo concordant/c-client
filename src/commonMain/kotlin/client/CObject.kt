@@ -73,19 +73,25 @@ open class CObject<T> {
         if (this.isClosed) throw RuntimeException("This object has been closed.")
         if (this.readOnly) throw RuntimeException("This object has been opened in read-only mode.")
 
-        this.crdt = CServiceAdapter.getObject<T>(this.id)
+        coroutineBlocking {
+            this.crdt = CServiceAdapter.getObject("myapp", this.id)
+        }
         return (ActiveSession as Session).environment.tick()
     }
 
     protected fun afterUpdate() {
-        CServiceAdapter.updateObject<T>(this.id, this.crdt)
+        coroutineBlocking {
+            CServiceAdapter.updateObject("myapp", this.id, this.crdt)
+        }
     }
 
     protected fun beforeGetter() {
         if (ActiveTransaction == null) throw RuntimeException("Object function should be call within a transaction.")
         if (this.isClosed) throw RuntimeException("This object has been closed.")
 
-        this.crdt = CServiceAdapter.getObject<T>(this.id)
+        coroutineBlocking {
+            this.crdt = CServiceAdapter.getObject("myapp", this.id)
+        }
     }
 
     protected fun afterGetter() {
