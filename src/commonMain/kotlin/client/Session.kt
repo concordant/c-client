@@ -39,7 +39,7 @@ class Session {
     /**
      * Database name
      */
-    val dbName: String
+    private val dbName: String
 
     /**
      * The client unique identifier
@@ -82,7 +82,15 @@ class Session {
         // Not yet implemented
         throw RuntimeException("Method pull is not yet supported.")
     }
-  
+
+    /**
+     * Get the database name
+     */
+    @Name("getDbName")
+    fun getDbName() : String {
+        return this.dbName
+    }
+
     /**
      * Opens a given collection with the given read-only mode.
      * @param collectionUId the collection unique identifier.
