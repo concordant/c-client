@@ -23,9 +23,9 @@ import crdtlib.crdt.DeltaCRDT
 import crdtlib.utils.ClientUId
 import crdtlib.utils.SimpleEnvironment
 
-class ClientEnvironment(uid: ClientUId) : SimpleEnvironment(uid) {
+class ClientEnvironment(session: Session, uid: ClientUId) : SimpleEnvironment(uid) {
 
-    override fun onRead(obj: DeltaCRDT){
+    override fun onRead(obj: DeltaCRDT) {
         // 1 - Vérifier que obj est un objet ouvert
         // 2 - Récupérer cobjectuid du delta
         // 3 - Récupérer l'object dans le c-service

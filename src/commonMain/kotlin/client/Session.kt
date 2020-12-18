@@ -37,6 +37,11 @@ import crdtlib.utils.VersionVector
 class Session {
 
     /**
+     * Database name
+     */
+    val dbName: String
+
+    /**
      * The client unique identifier
      */
     private val clientUId: ClientUId
@@ -60,9 +65,10 @@ class Session {
      * Private constructor.
      * @param clientUId the client unique identifier.
      */
-    private constructor(clientUId: ClientUId) {
+    private constructor(dbName: String, clientUId: ClientUId) {
+        this.dbName = dbName
         this.clientUId = clientUId
-        this.environment = ClientEnvironment(this.clientUId)
+        this.environment = ClientEnvironment(this, this.clientUId)
     }
 
     // c_pull_XX_view
@@ -131,7 +137,7 @@ class Session {
 
         ActiveSession = null
         coroutineBlocking {
-            CServiceAdapter.close("myapp")
+            CServiceAdapter.close(this.dbName)
         }
 
         this.isClosed = true
@@ -152,7 +158,7 @@ class Session {
             coroutineBlocking {
                 if (!CServiceAdapter.connect(dbName)) throw RuntimeException("Connection to server failed.")
             }
-            val session = Session(clientUId)
+            val session = Session(dbName, clientUId)
             ActiveSession = session
             return session
         }
