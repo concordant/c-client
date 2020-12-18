@@ -1,0 +1,5 @@
+image: gradle:alpine
+
+build:
+    script:
+        echo Building…
