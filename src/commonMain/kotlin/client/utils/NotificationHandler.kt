@@ -24,4 +24,4 @@ import crdtlib.utils.VersionVector
 /**
 * The notification handler (function) type used is case of object update.
 */
-typealias NotificationHandler<T> = (VersionVector, CObjectUId<T>) -> Unit
+typealias NotificationHandler = (VersionVector, CObjectUId) -> Unit

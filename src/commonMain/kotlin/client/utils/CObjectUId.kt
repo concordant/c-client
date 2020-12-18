@@ -24,4 +24,4 @@ import crdtlib.crdt.DeltaCRDT
 /**
 * Concordant object unique identifier.
 */
-data class CObjectUId<T: DeltaCRDT>(val collectionUId: CollectionUId, val name: String)
+data class CObjectUId(val collectionUId: CollectionUId, val type: String, val name: String)
