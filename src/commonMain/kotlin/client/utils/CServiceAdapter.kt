@@ -19,11 +19,15 @@
 
 package client.utils
 
-import crdtlib.crdt.DeltaCRDT
+import crdtlib.crdt.*
 import io.ktor.client.HttpClient
 import io.ktor.client.request.url
 import io.ktor.client.request.post
 import io.ktor.http.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  *
@@ -43,6 +47,7 @@ class CServiceAdapter {
             }
             client.close()
             return resp == "\"OK\""
+
         }
 
         /**
@@ -115,13 +120,13 @@ class CServiceAdapter {
          * @param objectUId CRDT id
          * @param crdt new crdt
          */
-        suspend fun updateObject(dbName: String, objectUId: CObjectUId, crdt: DeltaCRDT): Boolean{
+        suspend fun updateObject(dbName: String, myid: String, crdt: DeltaCRDT): Boolean{
             val client = HttpClient()
-            val crdtJson = crdt.toJson()
+            val crdtJson = crdt.toJson().replace("\"","\\\"")
             val resp = client.post<String>{
                 url("http://127.0.0.1:4000/api/update-object")
                 contentType(ContentType.Application.Json)
-                body = """{"appName":"$dbName","id":"$objectUId.name", "document":"$crdtJson"}"""
+                body = """{"appName":"$dbName","id":"$myid", "document":"$crdtJson"}"""
             }
             client.close()
             return resp == "\"OK\""
@@ -133,6 +138,21 @@ class CServiceAdapter {
          */
         suspend fun close(dbName: String): Boolean{
             return true
+        }
+
+        /**
+         * Delete the database
+         * @param dbName database name
+         */
+        suspend fun delete(dbName: String): Boolean{
+            val client = HttpClient()
+            val resp = client.post<String> {
+                url("http://127.0.0.1:4000/api/delete-app")
+                contentType(ContentType.Application.Json)
+                body = """{"appName":"$dbName"}"""
+            }
+            client.close()
+            return resp == "\"OK\""
         }
     }
 }

@@ -19,8 +19,13 @@
 
 package client.utils
 
+import crdtlib.crdt.PNCounter
+import crdtlib.crdt.DeltaCRDTFactory
+import crdtlib.utils.ClientUId
+import crdtlib.utils.SimpleEnvironment
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldMatch
 import kotlinx.coroutines.delay
 
@@ -28,16 +33,28 @@ class CServiceAdapterTest : StringSpec({
     "connect to c-service create, write twice, read and delete" {
         CServiceAdapter.connect("myapp").shouldBeTrue()
 
-        CServiceAdapter.updateObject("myapp", "myid", """{\"key\":\"value1\"}""")
-        delay(500)
-        val regex1 = """\[\"\{\\\"_id\\\":\\\"myid\\\",\\\"_rev\\\":\\\"(\d+)-(\w+)\\\",\\\"key\\\":\\\"value1\\\"\}\"\]""".toRegex()
+        delay(200)
+
+        val uid = ClientUId("clientid")
+        val my_env = SimpleEnvironment(uid)
+        val my_crdt = DeltaCRDTFactory.createDeltaCRDT("PNCounter", my_env)
+        CServiceAdapter.updateObject("myapp", "myid", my_crdt).shouldBeTrue()
+        delay(200)
+
+        val regex1 = """\[\"\{\\\"_id\\\":\\\"myid\\\",\\\"_rev\\\":\\\"(\d+)-(\w+)\\\",\\\"type\\\":\\\"PNCounter\\\",\\\"metadata\\\":\{\\\"increment\\\":\[\],\\\"decrement\\\":\[\]\},\\\"value\\\":0\}\"\]""".toRegex()
         CServiceAdapter.getObjects("myapp").shouldMatch(regex1)
+        delay(200)
 
-        delay(500)
+        if (my_crdt is PNCounter) {
+            my_crdt.increment(10)
+            CServiceAdapter.updateObject("myapp", "myid", my_crdt)
+            delay(200)
+            val regex2 = """\[\"\{\\\"_id\\\":\\\"myid\\\",\\\"_rev\\\":\\\"(\d+)-(\w+)\\\",\\\"type\\\":\\\"PNCounter\\\",\\\"metadata\\\":\{\\\"increment\\\":\[\{\\\"name\\\":\\\"clientid\\\"},\{\\\"first\\\":10,\\\"second\\\":\{\\\"uid\\\":\{\\\"name\\\":\\\"clientid\\\"\},\\\"cnt\\\":-2147483647\}\}\],\\\"decrement\\\":\[\]\},\\\"value\\\":10\}\"\]""".toRegex()
+            CServiceAdapter.getObjects("myapp").shouldMatch(regex2)
+            delay(200)
+        }
 
-        CServiceAdapter.updateObject("myapp", "myid", """{\"key\":\"value2\"}""")
-        delay(500)
-        val regex2 = """\"\{\\\"_id\\\":\\\"myid\\\",\\\"_rev\\\":\\\"(\d+)-(\w+)\\\",\\\"key\\\":\\\"value2\\\"\}\"""".toRegex()
-        CServiceAdapter.getObject("myapp", "myid").shouldMatch(regex2)
+        CServiceAdapter.delete("myapp").shouldBeTrue()
+        delay(200)
     }
 })
