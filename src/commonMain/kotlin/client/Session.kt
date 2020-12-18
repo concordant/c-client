@@ -44,7 +44,7 @@ class Session {
     /**
      * The environment linked to the session
      */
-    public val environment: SimpleEnvironment
+    public val environment: ClientEnvironment
 
     /**
      * The collections opened within this session.
@@ -62,7 +62,7 @@ class Session {
      */
     private constructor(clientUId: ClientUId) {
         this.clientUId = clientUId
-        this.environment = SimpleEnvironment(this.clientUId)
+        this.environment = ClientEnvironment(this.clientUId)
     }
 
     // c_pull_XX_view
