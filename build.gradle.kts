@@ -53,11 +53,9 @@ kotlin {
             languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
         }
 
-
-
         commonMain {
             dependencies {
-                implementation("concordant:c-crdtlib:0.0.7-1")
+                implementation("concordant:c-crdtlib:1.0.0")
                 implementation("io.ktor:ktor-client-core:1.4.1")
             }
         }
@@ -69,7 +67,6 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
             }
         }
-
 
         val jvmMain by getting {
             dependencies {
