@@ -81,6 +81,7 @@ class Session {
      * @param readOnly is read-only mode activated.
      * @return the corresponding collection.
      */
+    @Name("openCollection")
     fun openCollection(collectionUId: CollectionUId, readOnly: Boolean): Collection {
         if (ActiveTransaction != null) throw RuntimeException("A collection cannot be open within a transaction.")
         if (this.isClosed) throw RuntimeException("This session has been closed.")
@@ -104,6 +105,7 @@ class Session {
      * @param type the desired consistency level.
      * @param body the transaction body function.
      */
+    @Name("transaction")
     fun transaction(type: ConsistencyLevel, body: TransactionBody): Transaction {
         if (ActiveTransaction != null) throw RuntimeException("A transaction is already opened.")
 
@@ -116,6 +118,7 @@ class Session {
     /**
      * Closes this session.
      */
+    @Name("close")
     fun close() {
         if(this.isClosed) return
 
@@ -139,6 +142,7 @@ class Session {
          * @param credentials the credentials provided by the client.
          * @return the client session to communicate with Concordant.
          */
+        @Name("connect")
         fun connect(dbName: String, credentials: String): Session {
             if (ActiveSession != null) throw RuntimeException("Another session is already active.")
 

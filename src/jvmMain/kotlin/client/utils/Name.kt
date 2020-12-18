@@ -17,53 +17,6 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-package client
+package client.utils
 
-import client.utils.ActiveTransaction
-import client.utils.TransactionBody
-import client.utils.Name
-
-/**
-* This class represents a transaction.
-*/
-class Transaction {
-
-    /**
-     * The transaction body function.
-     */
-     private val body: TransactionBody
-
-    /**
-     * Default constructor.
-     * @param body the function body of the transaction.
-     */
-    internal constructor(body: TransactionBody) {
-        this.body = body
-    }
-
-    /**
-     * Launches the transaction.
-     */
-     internal fun launch() {
-         try {
-            this.body()
-            this.commit()
-        } finally {
-            ActiveTransaction = null
-        }
-     }
-
-    /**
-     * Commits this transaction.
-     */
-    @Name("commit")
-    fun commit() { }
-
-    /**
-     * Aborts this transaction.
-     */
-    @Name("abort")
-    fun abort() {
-        throw RuntimeException("Transaction abort is not supported yet.")
-    }
-}
+actual annotation class Name(actual val name: String)
