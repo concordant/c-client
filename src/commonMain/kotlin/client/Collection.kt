@@ -94,6 +94,7 @@ class Collection {
     /**
      * Closes this collection.
      */
+    @Name("close")
     fun close() {
         val cobjects = this.openedObjects.values
         for (cobject in cobjects) {
