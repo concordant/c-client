@@ -18,10 +18,8 @@
 */
 
 package client.utils
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.await
+import kotlinx.coroutines.promise
 
-import crdtlib.utils.VersionVector
-
-/**
-* The notification handler (function) type used is case of object update.
-*/
-typealias NotificationHandler = (VersionVector, CObjectUId) -> Unit
+actual fun coroutineBlocking(block: suspend () -> Unit): dynamic = GlobalScope.promise { block() }

@@ -21,6 +21,7 @@ package client
 
 import client.utils.ActiveTransaction
 import client.utils.TransactionBody
+import client.utils.Name
 
 /**
 * This class represents a transaction.
@@ -55,11 +56,13 @@ class Transaction {
     /**
      * Commits this transaction.
      */
+    @Name("commit")
     fun commit() { }
 
     /**
      * Aborts this transaction.
      */
+    @Name("abort")
     fun abort() {
         throw RuntimeException("Transaction abort is not supported yet.")
     }

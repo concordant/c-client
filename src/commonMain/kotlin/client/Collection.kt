@@ -23,6 +23,11 @@ import client.utils.ActiveTransaction
 import client.utils.CObjectUId
 import client.utils.CollectionUId
 import client.utils.NotificationHandler
+import client.utils.Name
+import client.utils.coroutineBlocking
+import client.utils.CServiceAdapter
+import crdtlib.crdt.DeltaCRDT
+import crdtlib.crdt.DeltaCRDTFactory
 
 /**
 * This class represents a collection of objects.
@@ -52,7 +57,7 @@ class Collection {
     /**
      * The objects opened within this collection.
      */
-    private val openedObjects: MutableMap<CObjectUId<Any>, CObject<Any>> = mutableMapOf()
+    private val openedObjects: MutableMap<CObjectUId, DeltaCRDT> = mutableMapOf()
 
     /**
      * Default constructor.
@@ -72,33 +77,33 @@ class Collection {
      * @param readOnly is the object open in read-only mode.
      * @param handler currently not used.
      */
-    fun <T> open(objectId: String, readOnly: Boolean, handler: NotificationHandler<T>): T {
+    @Name("open")
+    fun open(objectId: String, type:String, readOnly: Boolean, handler: NotificationHandler): DeltaCRDT? {
         if (ActiveTransaction != null) throw RuntimeException("An object cannot be open within a transaction.")
         if (this.isClosed) throw RuntimeException("This collection has been closed.")
         if (this.readOnly && !readOnly) throw RuntimeException("Collection has been opened in read-only mode.")
 
-        val objectUId = CObjectUId<T>(this.id, objectId)
-        val newObject = PNCounter(this, objectUId as CObjectUId<PNCounter>, readOnly)
-        this.openedObjects[objectUId as CObjectUId<Any>] = newObject as CObject<Any>
-        return newObject as T
+        val objectUId : CObjectUId = CObjectUId(this.id, type, objectId)
+        coroutineBlocking {
+            this.openedObjects[objectUId] = CServiceAdapter.getObject(this.attachedSession.getDbName(), objectUId)
+        }
+        return this.openedObjects[objectUId]
     }
 
     /**
      * Notifies this collection that an object has been closed.
      * @param objectUId the closed object unique identifier.
      */
-    internal fun notifyClosedObject(objectUId: CObjectUId<Any>) {
+    internal fun notifyClosedObject(objectUId: CObjectUId) {
         this.openedObjects.remove(objectUId)
     }
 
     /**
      * Closes this collection.
      */
+    @Name("close")
     fun close() {
-        val cobjects = this.openedObjects.values
-        for (cobject in cobjects) {
-            cobject.close()
-        }
+        this.openedObjects.clear()
 
         this.isClosed = true
 

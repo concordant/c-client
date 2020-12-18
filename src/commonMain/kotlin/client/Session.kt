@@ -21,10 +21,12 @@ package client
 
 import client.utils.ActiveSession
 import client.utils.ActiveTransaction
-import client.utils.CService
+import client.utils.CServiceAdapter
 import client.utils.CollectionUId
 import client.utils.ConsistencyLevel
 import client.utils.TransactionBody
+import client.utils.coroutineBlocking
+import client.utils.Name
 import crdtlib.utils.ClientUId
 import crdtlib.utils.SimpleEnvironment
 import crdtlib.utils.VersionVector
@@ -35,6 +37,11 @@ import crdtlib.utils.VersionVector
 class Session {
 
     /**
+     * Database name
+     */
+    private val dbName: String
+
+    /**
      * The client unique identifier
      */
     private val clientUId: ClientUId
@@ -42,7 +49,7 @@ class Session {
     /**
      * The environment linked to the session
      */
-    public val environment: SimpleEnvironment
+    public val environment: ClientEnvironment
 
     /**
      * The collections opened within this session.
@@ -58,9 +65,10 @@ class Session {
      * Private constructor.
      * @param clientUId the client unique identifier.
      */
-    private constructor(clientUId: ClientUId) {
+    private constructor(dbName: String, clientUId: ClientUId) {
+        this.dbName = dbName
         this.clientUId = clientUId
-        this.environment = SimpleEnvironment(this.clientUId)
+        this.environment = ClientEnvironment(this, this.clientUId)
     }
 
     // c_pull_XX_view
@@ -74,13 +82,22 @@ class Session {
         // Not yet implemented
         throw RuntimeException("Method pull is not yet supported.")
     }
-  
+
+    /**
+     * Get the database name
+     */
+    @Name("getDbName")
+    fun getDbName() : String {
+        return this.dbName
+    }
+
     /**
      * Opens a given collection with the given read-only mode.
      * @param collectionUId the collection unique identifier.
      * @param readOnly is read-only mode activated.
      * @return the corresponding collection.
      */
+    @Name("openCollection")
     fun openCollection(collectionUId: CollectionUId, readOnly: Boolean): Collection {
         if (ActiveTransaction != null) throw RuntimeException("A collection cannot be open within a transaction.")
         if (this.isClosed) throw RuntimeException("This session has been closed.")
@@ -104,6 +121,7 @@ class Session {
      * @param type the desired consistency level.
      * @param body the transaction body function.
      */
+    @Name("transaction")
     fun transaction(type: ConsistencyLevel, body: TransactionBody): Transaction {
         if (ActiveTransaction != null) throw RuntimeException("A transaction is already opened.")
 
@@ -116,6 +134,7 @@ class Session {
     /**
      * Closes this session.
      */
+    @Name("close")
     fun close() {
         if(this.isClosed) return
 
@@ -125,7 +144,9 @@ class Session {
         }
 
         ActiveSession = null
-        CService.close(this.clientUId)
+        coroutineBlocking {
+            CServiceAdapter.close(this.dbName)
+        }
 
         this.isClosed = true
     }
@@ -137,12 +158,15 @@ class Session {
          * @param credentials the credentials provided by the client.
          * @return the client session to communicate with Concordant.
          */
+        @Name("connect")
         fun connect(dbName: String, credentials: String): Session {
             if (ActiveSession != null) throw RuntimeException("Another session is already active.")
 
             val clientUId = ClientUId("MY_ID")
-            if (!CService.connect(dbName, clientUId)) throw RuntimeException("Connection to server failed.")
-            val session = Session(clientUId)
+            coroutineBlocking {
+                if (!CServiceAdapter.connect(dbName)) throw RuntimeException("Connection to server failed.")
+            }
+            val session = Session(dbName, clientUId)
             ActiveSession = session
             return session
         }

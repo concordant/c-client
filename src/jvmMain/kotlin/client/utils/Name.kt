@@ -19,9 +19,4 @@
 
 package client.utils
 
-import crdtlib.utils.VersionVector
-
-/**
-* The notification handler (function) type used is case of object update.
-*/
-typealias NotificationHandler = (VersionVector, CObjectUId) -> Unit
+actual annotation class Name(actual val name: String)

@@ -17,11 +17,25 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-package client.utils
+package client
 
-import crdtlib.utils.VersionVector
+import crdtlib.crdt.DeltaCRDT
+import crdtlib.utils.ClientUId
+import crdtlib.utils.SimpleEnvironment
 
-/**
-* The notification handler (function) type used is case of object update.
-*/
-typealias NotificationHandler = (VersionVector, CObjectUId) -> Unit
+class ClientEnvironment(session: Session, uid: ClientUId) : SimpleEnvironment(uid) {
+
+    override fun onRead(obj: DeltaCRDT) {
+        // 1 - Vérifier que obj est un objet ouvert
+        // 2 - Récupérer cobjectuid du delta
+        // 3 - Récupérer l'object dans le c-service
+        // 4 - obj.merge(newVersion)
+    }
+
+    override fun onWrite(obj: DeltaCRDT, delta: DeltaCRDT) {
+        // 1 - Vérifier objet ouvert
+        // 2 - Vérifier si readOnly
+        // 3 - récupérer cobjectuid
+        // 4 - faire push dans le cservice
+    }
+}
