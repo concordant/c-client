@@ -19,9 +19,10 @@
 
 package client.utils
 
-import crdtlib.crdt.DeltaCRDT
+import kotlinx.serialization.*
 
 /**
 * Concordant object unique identifier.
 */
+@Serializable
 data class CObjectUId(val collectionUId: CollectionUId, val type: String, val name: String)
