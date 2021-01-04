@@ -18,7 +18,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("multiplatform") version "1.4.10"
+    kotlin("multiplatform") version "1.4.20"
+    kotlin("plugin.serialization") version "1.4.20"
 }
 
 repositories {
@@ -53,8 +54,9 @@ kotlin {
 
         commonMain {
             dependencies {
-                implementation("concordant:c-crdtlib:1.0.0")
+                implementation("concordant:c-crdtlib:1.0.1")
                 implementation("io.ktor:ktor-client-core:1.4.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
             }
         }
 
