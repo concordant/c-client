@@ -19,15 +19,15 @@
 
 package client.utils
 
-import crdtlib.crdt.*
+import crdtlib.crdt.DeltaCRDT
+import crdtlib.utils.Environment
 import io.ktor.client.HttpClient
-import io.ktor.client.request.url
 import io.ktor.client.request.post
+import io.ktor.client.request.url
 import io.ktor.http.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 /**
  *
@@ -51,6 +51,22 @@ class CServiceAdapter {
         }
 
         /**
+         * Get a CRDT from the database
+         * @param dbName database name
+         * @param objectUId crdt id
+         */
+        suspend fun getObject(dbName: String, objectUId: CObjectUId, env: Environment): DeltaCRDT {
+            val client = HttpClient()
+            val crdtJson = client.post<String>{
+                url("http://127.0.0.1:4000/api/get-object")
+                contentType(ContentType.Application.Json)
+                body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}"}"""
+            }
+            client.close()
+            return DeltaCRDT.fromJson(crdtJson.removePrefix("\"").removeSuffix("\"").replace("""\\"""","""\""""), env)
+        }
+
+        /**
          * Get all objects of the database
          * @param dbName database name
          */
@@ -66,67 +82,18 @@ class CServiceAdapter {
         }
 
         /**
-         * Get a specific object of the database
-         * @param dbName database name
-         * @param myid object id
-         */
-        suspend fun getObject(dbName: String, myid: String): String {
-            val client = HttpClient()
-            val resp = client.post<String> {
-                url("http://127.0.0.1:4000/api/get-object")
-                contentType(ContentType.Application.Json)
-                body = """{"appName":"$dbName","id":"$myid"}"""
-            }
-            client.close()
-            return resp
-        }
-
-        /**
-         * Update the object
-         * @param dbName database name
-         * @param myid object id
-         * @param mydoc object content
-         */
-        suspend fun updateObject(dbName: String, myid: String, mydoc: String): Boolean {
-            val client = HttpClient()
-            val resp = client.post<String> {
-                url("http://127.0.0.1:4000/api/update-object")
-                contentType(ContentType.Application.Json)
-                body = """{"appName":"$dbName","id":"$myid", "document":"$mydoc"}"""
-            }
-            client.close()
-            return resp == "\"OK\""
-        }
-
-        /**
-         * Get a CRDT from the database
-         * @param dbName database name
-         * @param objectUId crdt id
-         */
-        suspend fun getObject(dbName: String, objectUId: CObjectUId): DeltaCRDT {
-            val client = HttpClient()
-            val crdtJson = client.post<String>{
-                url("http://127.0.0.1:4000/api/get-object")
-                contentType(ContentType.Application.Json)
-                body = """{"appName":"$dbName","id":"$objectUId.name"}"""
-            }
-            client.close()
-            return DeltaCRDT.fromJson(crdtJson)
-        }
-
-        /**
          * Update a CRDT
          * @param dbName database name
          * @param objectUId CRDT id
          * @param crdt new crdt
          */
-        suspend fun updateObject(dbName: String, myid: String, crdt: DeltaCRDT): Boolean{
+        suspend fun updateObject(dbName: String, objectUId: CObjectUId, crdt: DeltaCRDT): Boolean{
             val client = HttpClient()
             val crdtJson = crdt.toJson().replace("\"","\\\"")
             val resp = client.post<String>{
                 url("http://127.0.0.1:4000/api/update-object")
                 contentType(ContentType.Application.Json)
-                body = """{"appName":"$dbName","id":"$myid", "document":"$crdtJson"}"""
+                body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}", "document":"$crdtJson"}"""
             }
             client.close()
             return resp == "\"OK\""
@@ -136,7 +103,7 @@ class CServiceAdapter {
          * Close the connection to the database
          * @param dbName database name
          */
-        suspend fun close(dbName: String): Boolean{
+        fun close(dbName: String): Boolean{
             return true
         }
 
