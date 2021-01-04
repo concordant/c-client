@@ -85,7 +85,7 @@ class Collection {
 
         val objectUId : CObjectUId = CObjectUId(this.id, type, objectId)
         coroutineBlocking {
-            this.openedObjects[objectUId] = CServiceAdapter.getObject(this.attachedSession.getDbName(), objectUId)
+            this.openedObjects[objectUId] = CServiceAdapter.getObject(this.attachedSession.getDbName(), objectUId, this.attachedSession.environment)
         }
         return this.openedObjects[objectUId]
     }
