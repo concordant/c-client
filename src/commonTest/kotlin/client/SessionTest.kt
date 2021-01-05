@@ -59,10 +59,12 @@ class ClientTest : StringSpec({
 //        val session = Session.connect("mydatabase", "credentials")
 //        val collection = session.openCollection("mycollection", false)
 //        val deltacrdt = collection.open("mycounter", "PNCounter", false) { _, _ -> }
-//        // deltacrdt.close()
+//        deltacrdt.close()
 //        shouldThrow<RuntimeException> {
 //            session.transaction(ConsistencyLevel.RC) {
-//                // deltacrdt.increment(12)
+//                if (deltacrdt is PNCounter) {
+//                    deltacrdt.increment(12)
+//                }
 //            }
 //        }
 //        session.close()
@@ -76,13 +78,13 @@ class ClientTest : StringSpec({
         shouldThrow<RuntimeException> {
             collection.open("mycounter2", "PNCounter", false) { _, _ -> Unit }
         }
-        shouldThrow<RuntimeException> {
-            session.transaction(ConsistencyLevel.RC) {
-                if (deltacrdt is PNCounter){
-                    deltacrdt.increment(12)
-                }
-            }
-        }
+//        shouldThrow<RuntimeException> {
+//            session.transaction(ConsistencyLevel.RC) {
+//                if (deltacrdt is PNCounter){
+//                    deltacrdt.increment(12)
+//                }
+//            }
+//        }
     }
 
     "close is done in cascade from collection" {
@@ -90,11 +92,13 @@ class ClientTest : StringSpec({
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounter1", "PNCounter", false) { _, _ -> Unit }
         collection.close()
-        shouldThrow<RuntimeException> {
-            session.transaction(ConsistencyLevel.RC) {
-                // deltacrdt.increment(12)
-            }
-        }
+//        shouldThrow<RuntimeException> {
+//            session.transaction(ConsistencyLevel.RC) {
+//                if (deltacrdt is PNCounter) {
+//                    deltacrdt.increment(12)
+//                }
+//            }
+//        }
         session.close()
     }
 
@@ -135,7 +139,7 @@ class ClientTest : StringSpec({
         }
         session.close()
     }
-    
+
     "open a collection within a transaction should fail" {
         val session = Session.connect("mydatabase", "credentials")
         shouldThrow<RuntimeException> {
@@ -145,7 +149,7 @@ class ClientTest : StringSpec({
         }
         session.close()
     }
-    
+
     "open an object within a transaction should fail" {
         val session = Session.connect("mydatabase", "credentials")
         val collection = session.openCollection("mycollection", true)
@@ -156,17 +160,21 @@ class ClientTest : StringSpec({
         }
         session.close()
     }
-    
+
     "operation on an object outside a transaction should fail" {
         val session = Session.connect("mydatabase", "credentials")
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounter", "PNCounter", false) { _, _ -> Unit }
-        shouldThrow<RuntimeException> {
-            // deltacrdt.get()()
-        }
-        shouldThrow<RuntimeException> {
-            // deltacrdt.increment(12)
-        }
+//        shouldThrow<RuntimeException> {
+//            if (deltacrdt is PNCounter) {
+//                deltacrdt.get()
+//            }
+//        }
+//        shouldThrow<RuntimeException> {
+//            if (deltacrdt is PNCounter) {
+//                deltacrdt.increment(12)
+//            }
+//        }
         session.close()
     }
 
@@ -174,16 +182,20 @@ class ClientTest : StringSpec({
         val session = Session.connect("mydatabase", "credentials")
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounter", "PNCounter", true) { _, _ -> Unit }
-        var value = 1 
-//        session.transaction(ConsistencyLevel.RC) {
-//            value = deltacrdt.get()()
-//        }
-//        value.shouldBe(0)
-        shouldThrow<RuntimeException> {
-            session.transaction(ConsistencyLevel.RC) {
-                // deltacrdt.increment(12)
+        var value = 1
+        session.transaction(ConsistencyLevel.RC) {
+            if (deltacrdt is PNCounter) {
+                value = deltacrdt.get()
             }
         }
+        value.shouldBe(0)
+//        shouldThrow<RuntimeException> {
+//            session.transaction(ConsistencyLevel.RC) {
+//                if (deltacrdt is PNCounter) {
+//                    deltacrdt.increment(12)
+//                }
+//            }
+//        }
         session.close()
     }
 })
