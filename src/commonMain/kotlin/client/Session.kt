@@ -135,7 +135,7 @@ class Session {
      * Closes this session.
      */
     @Name("close")
-    suspend fun close() {
+    fun close() {
         if(this.isClosed) return
 
         val collections = this.openedCollections.values
@@ -144,9 +144,9 @@ class Session {
         }
 
         ActiveSession = null
-        CServiceAdapter.close(this.dbName)
 
         this.isClosed = true
+        CServiceAdapter.close(this.dbName)
     }
 
     companion object {
@@ -157,9 +157,10 @@ class Session {
          * @return the client session to communicate with Concordant.
          */
         @Name("connect")
-        suspend fun connect(dbName: String, credentials: String): Session {
+        fun connect(dbName: String, credentials: String): Session {
             if (ActiveSession != null) throw RuntimeException("Another session is already active.")
-            if (!CServiceAdapter.connect(dbName)) throw RuntimeException("Connection to server failed.")
+//            if (!CServiceAdapter.connect(dbName)) throw RuntimeException("Connection to server failed.")
+            CServiceAdapter.connect(dbName)
 
             val clientUId = ClientUId("MY_ID")
             val session = Session(dbName, clientUId)

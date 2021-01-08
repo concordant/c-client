@@ -24,7 +24,6 @@ import client.utils.CObjectUId
 import client.utils.CollectionUId
 import client.utils.NotificationHandler
 import client.utils.Name
-import client.utils.coroutineBlocking
 import client.utils.CServiceAdapter
 import crdtlib.crdt.DeltaCRDT
 import crdtlib.crdt.DeltaCRDTFactory
@@ -78,13 +77,15 @@ class Collection {
      * @param handler currently not used.
      */
     @Name("open")
-    suspend fun open(objectId: String, type:String, readOnly: Boolean, handler: NotificationHandler): DeltaCRDT? {
+    fun open(objectId: String, type:String, readOnly: Boolean, handler: NotificationHandler): DeltaCRDT {
         if (ActiveTransaction != null) throw RuntimeException("An object cannot be open within a transaction.")
         if (this.isClosed) throw RuntimeException("This collection has been closed.")
         if (this.readOnly && !readOnly) throw RuntimeException("Collection has been opened in read-only mode.")
 
-        val objectUId : CObjectUId = CObjectUId(this.id, type, objectId)
-        val obj : DeltaCRDT = CServiceAdapter.getObject(this.attachedSession.getDbName(), objectUId, this.attachedSession.environment)
+        val objectUId = CObjectUId(this.id, type, objectId)
+
+        val obj : DeltaCRDT = DeltaCRDTFactory.createDeltaCRDT(type, this.attachedSession.environment)
+        CServiceAdapter.getObject(this.attachedSession.getDbName(), objectUId, obj)
         this.openedObjects[obj] = Pair(objectUId, readOnly)
         return obj
     }
