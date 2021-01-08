@@ -78,16 +78,15 @@ class Collection {
      * @param handler currently not used.
      */
     @Name("open")
-    fun open(objectId: String, type:String, readOnly: Boolean, handler: NotificationHandler): DeltaCRDT? {
+    suspend fun open(objectId: String, type:String, readOnly: Boolean, handler: NotificationHandler): DeltaCRDT? {
         if (ActiveTransaction != null) throw RuntimeException("An object cannot be open within a transaction.")
         if (this.isClosed) throw RuntimeException("This collection has been closed.")
         if (this.readOnly && !readOnly) throw RuntimeException("Collection has been opened in read-only mode.")
 
         val objectUId : CObjectUId = CObjectUId(this.id, type, objectId)
-        coroutineBlocking {
-            this.openedObjects[objectUId] = CServiceAdapter.getObject(this.attachedSession.getDbName(), objectUId, this.attachedSession.environment)
-        }
-        return this.openedObjects[objectUId]
+        val obj : DeltaCRDT = CServiceAdapter.getObject(this.attachedSession.getDbName(), objectUId, this.attachedSession.environment)
+        this.openedObjects[objectUId]=obj
+        return obj
     }
 
     /**

@@ -103,7 +103,7 @@ class CServiceAdapter {
          * Close the connection to the database
          * @param dbName database name
          */
-        fun close(dbName: String): Boolean{
+        suspend fun close(dbName: String): Boolean{
             return true
         }
 
