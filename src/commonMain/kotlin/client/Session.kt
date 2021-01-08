@@ -25,10 +25,8 @@ import client.utils.CServiceAdapter
 import client.utils.CollectionUId
 import client.utils.ConsistencyLevel
 import client.utils.TransactionBody
-import client.utils.coroutineBlocking
 import client.utils.Name
 import crdtlib.utils.ClientUId
-import crdtlib.utils.SimpleEnvironment
 import crdtlib.utils.VersionVector
 
 /**
@@ -49,7 +47,7 @@ class Session {
     /**
      * The environment linked to the session
      */
-    public val environment: ClientEnvironment
+    val environment: ClientEnvironment
 
     /**
      * The collections opened within this session.
