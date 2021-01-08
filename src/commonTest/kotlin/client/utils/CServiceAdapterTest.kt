@@ -31,6 +31,8 @@ import kotlinx.coroutines.delay
 
 class CServiceAdapterTest : StringSpec({
     "connect to c-service create, write twice, read and delete" {
+        CServiceAdapter.delete("myapp").shouldBeTrue()
+        delay(200)
         CServiceAdapter.connect("myapp").shouldBeTrue()
         delay(200)
 
@@ -58,7 +60,5 @@ class CServiceAdapterTest : StringSpec({
         }
 
         CServiceAdapter.close("myapp").shouldBeTrue()
-        CServiceAdapter.delete("myapp").shouldBeTrue()
-        delay(200)
     }
 })
