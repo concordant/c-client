@@ -57,7 +57,7 @@ class Collection {
     /**
      * The objects opened within this collection.
      */
-    private val openedObjects: MutableMap<CObjectUId, DeltaCRDT> = mutableMapOf()
+    internal val openedObjects: MutableMap<DeltaCRDT, Pair<CObjectUId, Boolean>> = mutableMapOf()
 
     /**
      * Default constructor.
@@ -84,18 +84,12 @@ class Collection {
         if (this.readOnly && !readOnly) throw RuntimeException("Collection has been opened in read-only mode.")
 
         val objectUId : CObjectUId = CObjectUId(this.id, type, objectId)
+        lateinit var obj: DeltaCRDT
         coroutineBlocking {
-            this.openedObjects[objectUId] = CServiceAdapter.getObject(this.attachedSession.getDbName(), objectUId, this.attachedSession.environment)
+            obj = CServiceAdapter.getObject(this.attachedSession.getDbName(), objectUId, this.attachedSession.environment)
         }
-        return this.openedObjects[objectUId]
-    }
-
-    /**
-     * Notifies this collection that an object has been closed.
-     * @param objectUId the closed object unique identifier.
-     */
-    internal fun notifyClosedObject(objectUId: CObjectUId) {
-        this.openedObjects.remove(objectUId)
+        this.openedObjects[obj] = Pair(objectUId, readOnly)
+        return obj
     }
 
     /**

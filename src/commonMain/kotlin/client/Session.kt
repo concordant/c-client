@@ -54,12 +54,12 @@ class Session {
     /**
      * The collections opened within this session.
      */
-    private val openedCollections: MutableMap<CollectionUId, Collection> = mutableMapOf()
+    internal val openedCollections: MutableMap<CollectionUId, Collection> = mutableMapOf()
 
     /**
      * Is this session closed.
      */
-    private var isClosed: Boolean = false
+    internal var isClosed: Boolean = false
 
     /**
      * Private constructor.
