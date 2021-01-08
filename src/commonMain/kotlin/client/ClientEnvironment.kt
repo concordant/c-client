@@ -41,26 +41,19 @@ class ClientEnvironment(val session: Session, uid: ClientUId) : SimpleEnvironmen
         // Assert session and collection are opened
         if (this.session.isClosed) throw RuntimeException("The session has been closed.")
         val collection = this.session.openedCollections.values.elementAtOrNull(0)
-        if (collection == null) throw RuntimeException("There is no opened collection.")
+            ?: throw RuntimeException("There is no opened collection.")
 
         // Assert we are in a transaction.
         if (ActiveTransaction == null) throw RuntimeException("Code should be executed in a transaction")
 
         // Assert the object is opened
-        val infos = collection.openedObjects[obj]
-        if (infos == null) throw RuntimeException("This object has been closed.")
+        val infos = collection.openedObjects[obj] ?: throw RuntimeException("This object has been closed.")
 
         // Assert the object unique identifier
         val objectUId = infos.first
 
         // Get distant version of the object
-        lateinit var distantObj: DeltaCRDT
-        coroutineBlocking {
-             distantObj = CServiceAdapter.getObject(session.getDbName(), objectUId, this)
-        }
-
-        // Merge distant value with the loacl one
-        obj.merge(distantObj)
+        CServiceAdapter.getObject(session.getDbName(), objectUId, obj)
     }
 
     /**
@@ -89,8 +82,6 @@ class ClientEnvironment(val session: Session, uid: ClientUId) : SimpleEnvironmen
         val objectUId = infos.first
 
         // Push the new local version to backend
-        coroutineBlocking {
-            CServiceAdapter.updateObject(session.getDbName(), objectUId, obj)
-        }
+        CServiceAdapter.updateObject(session.getDbName(), objectUId, obj)
     }
 }
