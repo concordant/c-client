@@ -25,9 +25,7 @@ import crdtlib.crdt.PNCounter
 import crdtlib.utils.ClientUId
 import crdtlib.utils.SimpleEnvironment
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldMatch
 import kotlinx.coroutines.delay
 
 class CServiceAdapterTest : StringSpec({
