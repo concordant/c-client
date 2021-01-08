@@ -57,7 +57,7 @@ class Collection {
     /**
      * The objects opened within this collection.
      */
-    private val openedObjects: MutableMap<CObjectUId, DeltaCRDT> = mutableMapOf()
+    internal val openedObjects: MutableMap<DeltaCRDT, Pair<CObjectUId, Boolean>> = mutableMapOf()
 
     /**
      * Default constructor.
@@ -85,16 +85,8 @@ class Collection {
 
         val objectUId : CObjectUId = CObjectUId(this.id, type, objectId)
         val obj : DeltaCRDT = CServiceAdapter.getObject(this.attachedSession.getDbName(), objectUId, this.attachedSession.environment)
-        this.openedObjects[objectUId]=obj
+        this.openedObjects[obj] = Pair(objectUId, readOnly)
         return obj
-    }
-
-    /**
-     * Notifies this collection that an object has been closed.
-     * @param objectUId the closed object unique identifier.
-     */
-    internal fun notifyClosedObject(objectUId: CObjectUId) {
-        this.openedObjects.remove(objectUId)
     }
 
     /**
