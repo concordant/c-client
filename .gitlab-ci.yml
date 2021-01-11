@@ -1,5 +1,28 @@
-image: gradle:alpine
+image: gradle:latest
+
+cache: &global_cache
+  # per-branch cache
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .gradle/
 
 build:
-    script:
-        echo Building…
+  stage: build
+  script:
+    - gradle assemble --build-cache
+  artifacts:
+    paths:
+      - build/
+
+publish:
+  stage: deploy
+  when: manual
+  script:
+    - gradle publish
+  cache:
+    # only pull global_cache
+    <<: *global_cache
+    policy: pull
+  # use only artifacts from build job
+  dependencies:
+    - build
