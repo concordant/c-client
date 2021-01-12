@@ -25,7 +25,9 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.post
 import io.ktor.client.request.url
 import io.ktor.http.*
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -38,47 +40,35 @@ class CServiceAdapter {
          * Connection to the database
          * @param dbName database name
          */
-        suspend fun connect(dbName: String): Boolean {
-            val client = HttpClient()
-            val resp = client.post<String> {
-                url("http://127.0.0.1:4000/api/create-app")
-                contentType(ContentType.Application.Json)
-                body = """{"appName":"$dbName"}"""
+        fun connect(dbName: String) {
+            GlobalScope.launch {
+                val client = HttpClient()
+                val resp = client.post<String> {
+                    url("http://127.0.0.1:4000/api/create-app")
+                    contentType(ContentType.Application.Json)
+                    body = """{"appName":"$dbName"}"""
+                }
+                client.close()
             }
-            client.close()
-            return resp == "\"OK\""
-
         }
 
         /**
          * Get a CRDT from the database
          * @param dbName database name
          * @param objectUId crdt id
+         * @param target the delta crdt in which distant value should be merged
          */
-        suspend fun getObject(dbName: String, objectUId: CObjectUId, env: Environment): DeltaCRDT {
-            val client = HttpClient()
-            val crdtJson = client.post<String>{
-                url("http://127.0.0.1:4000/api/get-object")
-                contentType(ContentType.Application.Json)
-                body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}"}"""
+        fun getObject(dbName: String, objectUId: CObjectUId, target: DeltaCRDT){
+            GlobalScope.launch {
+                val client = HttpClient()
+                val crdtJson = client.post<String>{
+                    url("http://127.0.0.1:4000/api/get-object")
+                    contentType(ContentType.Application.Json)
+                    body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}"}"""
+                }
+                client.close()
+                target.merge(DeltaCRDT.fromJson(crdtJson.removePrefix("\"").removeSuffix("\"").replace("""\\"""","""\"""")))
             }
-            client.close()
-            return DeltaCRDT.fromJson(crdtJson.removePrefix("\"").removeSuffix("\"").replace("""\\"""","""\""""), env)
-        }
-
-        /**
-         * Get all objects of the database
-         * @param dbName database name
-         */
-        suspend fun getObjects(dbName: String): String {
-            val client = HttpClient()
-            val resp = client.post<String> {
-                url("http://127.0.0.1:4000/api/get-objects")
-                contentType(ContentType.Application.Json)
-                body = """{"appName":"$dbName"}"""
-            }
-            client.close()
-            return resp
         }
 
         /**
@@ -87,39 +77,40 @@ class CServiceAdapter {
          * @param objectUId CRDT id
          * @param crdt new crdt
          */
-        suspend fun updateObject(dbName: String, objectUId: CObjectUId, crdt: DeltaCRDT): Boolean{
-            val client = HttpClient()
-            val crdtJson = crdt.toJson().replace("\"","\\\"")
-            val resp = client.post<String>{
-                url("http://127.0.0.1:4000/api/update-object")
-                contentType(ContentType.Application.Json)
-                body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}", "document":"$crdtJson"}"""
+        fun updateObject(dbName: String, objectUId: CObjectUId, crdt: DeltaCRDT){
+            GlobalScope.launch {
+                val client = HttpClient()
+                val crdtJson = crdt.toJson().replace("\"","\\\"")
+                client.post<String>{
+                    url("http://127.0.0.1:4000/api/update-object")
+                    contentType(ContentType.Application.Json)
+                    body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}", "document":"$crdtJson"}"""
+                }
+                client.close()
             }
-            client.close()
-            return resp == "\"OK\""
         }
 
         /**
          * Close the connection to the database
          * @param dbName database name
          */
-        fun close(dbName: String): Boolean{
-            return true
+        fun close(dbName: String){
         }
 
         /**
          * Delete the database
          * @param dbName database name
          */
-        suspend fun delete(dbName: String): Boolean{
-            val client = HttpClient()
-            val resp = client.post<String> {
-                url("http://127.0.0.1:4000/api/delete-app")
-                contentType(ContentType.Application.Json)
-                body = """{"appName":"$dbName"}"""
+        fun delete(dbName: String) {
+            GlobalScope.launch {
+                val client = HttpClient()
+                val resp = client.post<String> {
+                    url("http://127.0.0.1:4000/api/delete-app")
+                    contentType(ContentType.Application.Json)
+                    body = """{"appName":"$dbName"}"""
+                }
+                client.close()
             }
-            client.close()
-            return resp == "\"OK\""
         }
     }
 }
