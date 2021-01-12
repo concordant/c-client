@@ -20,45 +20,45 @@
 package client.utils
 
 import crdtlib.crdt.DeltaCRDT
+import crdtlib.crdt.DeltaCRDTFactory
 import crdtlib.crdt.PNCounter
 import crdtlib.utils.ClientUId
 import crdtlib.utils.SimpleEnvironment
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldMatch
 import kotlinx.coroutines.delay
 
 class CServiceAdapterTest : StringSpec({
     "connect to c-service create, write twice, read and delete" {
-        CServiceAdapter.connect("myapp").shouldBeTrue()
-        delay(200)
+        CServiceAdapter.delete("myapp")
+        delay(300)
+        CServiceAdapter.connect("myapp")
+        delay(300)
 
         val uid = ClientUId("clientid")
         val my_env = SimpleEnvironment(uid)
 
         val objectUId = CObjectUId("myCollection", "PNCounter", "myPNCounter")
-        val my_crdt : DeltaCRDT = CServiceAdapter.getObject("myapp", objectUId, my_env)
-        delay(200)
 
+        val my_crdt : DeltaCRDT = DeltaCRDTFactory.createDeltaCRDT("PNCounter", my_env)
+        CServiceAdapter.getObject("myapp", objectUId, my_crdt)
+        delay(300)
         my_crdt.toJson().shouldBe("{\"type\":\"PNCounter\",\"metadata\":{\"increment\":[],\"decrement\":[]},\"value\":0}")
-        delay(200)
 
         if (my_crdt is PNCounter) {
             my_crdt.increment(10)
-            CServiceAdapter.updateObject("myapp", objectUId, my_crdt).shouldBeTrue()
+            CServiceAdapter.updateObject("myapp", objectUId, my_crdt)
             my_crdt.decrement(5)
-            CServiceAdapter.updateObject("myapp", objectUId, my_crdt).shouldBeTrue()
-            delay(200)
+            CServiceAdapter.updateObject("myapp", objectUId, my_crdt)
+            delay(300)
+
+            val my_crdt2 : DeltaCRDT = DeltaCRDTFactory.createDeltaCRDT("PNCounter", my_env)
+            CServiceAdapter.getObject("myapp", objectUId, my_crdt2)
+            delay(300)
             val text = "{\"type\":\"PNCounter\",\"metadata\":{\"increment\":[{\"name\":\"clientid\"},{\"first\":10,\"second\":{\"uid\":{\"name\":\"clientid\"},\"cnt\":-2147483647}}],\"decrement\":[{\"name\":\"clientid\"},{\"first\":5,\"second\":{\"uid\":{\"name\":\"clientid\"},\"cnt\":-2147483646}}]},\"value\":5}"
-            CServiceAdapter.getObject("myapp", objectUId, my_env).toJson().shouldBe(text)
-            delay(200)
-//            val regex = """\[\"\{\\\"_id\\\":\\\"myid\\\",\\\"_rev\\\":\\\"(\d+)-(\w+)\\\",\\\"type\\\":\\\"PNCounter\\\",\\\"metadata\\\":\{\\\"increment\\\":\[\],\\\"decrement\\\":\[\]\},\\\"value\\\":0\}\"\]""".toRegex()
-//            CServiceAdapter.getObjects("myapp").shouldMatch(regex)
+            my_crdt2.toJson().shouldBe(text)
         }
 
-        CServiceAdapter.close("myapp").shouldBeTrue()
-        CServiceAdapter.delete("myapp").shouldBeTrue()
-        delay(200)
+        CServiceAdapter.close("myapp")
     }
 })
