@@ -26,6 +26,7 @@ import io.kotest.assertions.throwables.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.*
 import io.kotest.matchers.nulls.*
+import kotlinx.coroutines.delay
 
 class ClientTest : StringSpec({
     "opened session should be active session" {
@@ -102,11 +103,11 @@ class ClientTest : StringSpec({
     }
 
     "open a second session should fail" {
-        val session1 = Session.connect("mydatabase1", "credentials")
+        val session = Session.connect("mydatabase", "credentials")
         shouldThrow<RuntimeException> {
             Session.connect("mydatabase2", "credentials")
         }
-        session1.close()
+        session.close()
     }
 
     "open a second collection should fail" {
@@ -195,6 +196,37 @@ class ClientTest : StringSpec({
                 }
             }
         }
+        session.close()
+    }
+
+    "PNCounter should work" {
+        val session = Session.connect("mydatabase", "credentials")
+        val collection = session.openCollection("mycollection", false)
+        val deltacrdt = collection.open("mycounter", "PNCounter", false) { _, _ -> Unit }
+        var value = 1
+        session.transaction(ConsistencyLevel.RC) {
+            if (deltacrdt is PNCounter) {
+                value = deltacrdt.get()
+            }
+        }
+        value.shouldBe(0)
+        session.transaction(ConsistencyLevel.RC) {
+            if (deltacrdt is PNCounter) {
+                deltacrdt.increment(12)
+                deltacrdt.decrement(3)
+                value = deltacrdt.get()
+            }
+        }
+        value.shouldBe(9)
+        val deltacrdt2 = collection.open("mycounter", "PNCounter", false) { _, _ -> Unit }
+        delay(300)
+        var value2 = 1
+        session.transaction(ConsistencyLevel.RC) {
+            if (deltacrdt2 is PNCounter) {
+                value2 = deltacrdt2.get()
+            }
+        }
+        value2.shouldBe(9)
         session.close()
     }
 })
