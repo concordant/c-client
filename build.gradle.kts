@@ -31,28 +31,42 @@ plugins {
 repositories {
     jcenter()
     mavenCentral()
+    maven(url = "https://jitpack.io")
     maven {
         url = uri("https://gitlab.inria.fr/api/v4/projects/18591/packages/maven")
-        credentials(HttpHeaderCredentials::class) {
-            name = "Deploy-Token"
-            val gitLabPrivateToken: String by project
-            value = gitLabPrivateToken
-        }
         authentication {
             create<HttpHeaderAuthentication>("header")
         }
+        // authentication by CI or private token
+        credentials(HttpHeaderCredentials::class) {
+            val CI_JOB_TOKEN = System.getenv("CI_JOB_TOKEN")
+            if (CI_JOB_TOKEN == null){
+                name = "Private-Token"
+                val gitLabPrivateToken: String by project
+                value = gitLabPrivateToken
+            } else {
+                name = "Job-Token"
+                value = CI_JOB_TOKEN
+            }
+        }
     }
-    maven(url = "https://jitpack.io")
 }
 
+// Kotlin build config, per target
 kotlin {
+    // do not remove, even if empty
     jvm() {
+        // uncomment if project contains Java source files
+        //        withJava()
     }
 
+    // Define "nodeJS" platform
     js("nodeJs") {
+        // build for nodeJS
         nodejs {}
     }
 
+    // Dependencies, per source set
     sourceSets {
         all {
             languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
@@ -78,6 +92,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-cio-jvm:1.4.1")
+                implementation("com.github.ntrrgc:ts-generator:1.1.1")
             }
         }
 
@@ -101,9 +116,25 @@ kotlin {
             }
         }
     }
+
+    tasks {
+        register<JavaExec>("tsgen") {
+            group = "build"
+            description = "Generate .d.ts description file"
+            dependsOn("compileKotlinJvm")
+            dependsOn("compileKotlinNodeJs")
+            val mainClasses = kotlin.targets["jvm"].compilations["main"]
+            classpath = configurations["jvmRuntimeClasspath"] + mainClasses.output.classesDirs
+            main = "client.GenerateTSKt"
+            outputs.file("$buildDir/js/packages/c-client-nodeJs/kotlin/c-client.d.ts")
+        }
+    }
+
 }
 
-tasks.withType<Test> { useJUnitPlatform() }
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
@@ -120,8 +151,16 @@ npmPublishing {
     publications {
         val nodeJs by getting {
             packageJson {
+                types = "c-client.d.ts"
                 "description" to project.description
             }
         }
+    }
+}
+
+// tasks dependencies
+tasks {
+    named("nodeJsMainClasses") {
+        dependsOn("tsgen")
     }
 }
