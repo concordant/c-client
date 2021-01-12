@@ -56,6 +56,7 @@ class CServiceAdapter {
          * Get a CRDT from the database
          * @param dbName database name
          * @param objectUId crdt id
+         * @param target the delta crdt in which distant value should be merged
          */
         fun getObject(dbName: String, objectUId: CObjectUId, target: DeltaCRDT){
             GlobalScope.launch {
