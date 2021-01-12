@@ -24,8 +24,9 @@ import client.utils.ActiveTransaction
 import client.utils.CServiceAdapter
 import client.utils.CollectionUId
 import client.utils.ConsistencyLevel
-import client.utils.TransactionBody
 import client.utils.Name
+import client.utils.TransactionBody
+import client.utils.generateUUId4
 import crdtlib.utils.ClientUId
 import crdtlib.utils.VersionVector
 
@@ -160,7 +161,7 @@ class Session {
 //            if (!CServiceAdapter.connect(dbName)) throw RuntimeException("Connection to server failed.")
             CServiceAdapter.connect(dbName)
 
-            val clientUId = ClientUId("MY_ID")
+            val clientUId = ClientUId(generateUUId4())
             val session = Session(dbName, clientUId)
             ActiveSession = session
             return session
