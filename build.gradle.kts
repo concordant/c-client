@@ -17,9 +17,15 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+description = "Concordant C-Client"
+group = "concordant"
+version = "0.0.1"
+
 plugins {
     kotlin("multiplatform") version "1.4.20"
     kotlin("plugin.serialization") version "1.4.20"
+    id("org.jetbrains.dokka") version "1.4.10.2"
+    id("lt.petuska.npm.publish") version "1.0.2"
 }
 
 repositories {
@@ -72,6 +78,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-cio-jvm:1.4.1")
+                implementation("com.github.ntrrgc:ts-generator:1.1.1")
             }
         }
 
@@ -95,10 +102,51 @@ kotlin {
             }
         }
     }
+
+    tasks {
+        register<JavaExec>("tsgen") {
+            group = "build"
+            description = "Generate .d.ts description file"
+            dependsOn("compileKotlinJvm")
+            dependsOn("compileKotlinNodeJs")
+            val mainClasses = kotlin.targets["jvm"].compilations["main"]
+            classpath = configurations["jvmRuntimeClasspath"] + mainClasses.output.classesDirs
+            main = "client.GenerateTSKt"
+            outputs.file("$buildDir/js/packages/c-client-nodeJs/kotlin/c-client.d.ts")
+        }
+    }
+
 }
 
-tasks.withType<Test> { useJUnitPlatform() }
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+npmPublishing {
+    organization = group as String
+    repositories {
+        repository("Gitlab") {
+            registry = uri("https://gitlab.inria.fr/api/v4/projects/${System.getenv("CI_PROJECT_ID")}/packages/npm")
+            authToken = System.getenv("CI_JOB_TOKEN")
+        }
+    }
+    publications {
+        val nodeJs by getting {
+            packageJson {
+                types = "c-client.d.ts"
+                "description" to project.description
+            }
+        }
+    }
+}
+
+// tasks dependencies
+tasks {
+    named("nodeJsMainClasses") {
+        dependsOn("tsgen")
+    }
 }
