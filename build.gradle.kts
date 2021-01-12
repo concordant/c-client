@@ -92,6 +92,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-cio-jvm:1.4.1")
+                implementation("com.github.ntrrgc:ts-generator:1.1.1")
             }
         }
 
@@ -115,9 +116,25 @@ kotlin {
             }
         }
     }
+
+    tasks {
+        register<JavaExec>("tsgen") {
+            group = "build"
+            description = "Generate .d.ts description file"
+            dependsOn("compileKotlinJvm")
+            dependsOn("compileKotlinNodeJs")
+            val mainClasses = kotlin.targets["jvm"].compilations["main"]
+            classpath = configurations["jvmRuntimeClasspath"] + mainClasses.output.classesDirs
+            main = "client.GenerateTSKt"
+            outputs.file("$buildDir/js/packages/c-client-nodeJs/kotlin/c-client.d.ts")
+        }
+    }
+
 }
 
-tasks.withType<Test> { useJUnitPlatform() }
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
@@ -134,8 +151,16 @@ npmPublishing {
     publications {
         val nodeJs by getting {
             packageJson {
+                types = "c-client.d.ts"
                 "description" to project.description
             }
         }
+    }
+}
+
+// tasks dependencies
+tasks {
+    named("nodeJsMainClasses") {
+        dependsOn("tsgen")
     }
 }
