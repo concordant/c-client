@@ -43,7 +43,6 @@ fun main() {
             )
             println("}")
             println()
-            println("export namespace client {")
             println()
             println(
                 TypeScriptGenerator(
@@ -54,7 +53,6 @@ fun main() {
                     )
                 ).definitionsText
             )
-            println("}")
             println("}")
             println("}")
         }
