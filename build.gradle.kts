@@ -31,28 +31,42 @@ plugins {
 repositories {
     jcenter()
     mavenCentral()
+    maven(url = "https://jitpack.io")
     maven {
         url = uri("https://gitlab.inria.fr/api/v4/projects/18591/packages/maven")
-        credentials(HttpHeaderCredentials::class) {
-            name = "Deploy-Token"
-            val gitLabPrivateToken: String by project
-            value = gitLabPrivateToken
-        }
         authentication {
             create<HttpHeaderAuthentication>("header")
         }
+        // authentication by CI or private token
+        credentials(HttpHeaderCredentials::class) {
+            val CI_JOB_TOKEN = System.getenv("CI_JOB_TOKEN")
+            if (CI_JOB_TOKEN == null){
+                name = "Private-Token"
+                val gitLabPrivateToken: String by project
+                value = gitLabPrivateToken
+            } else {
+                name = "Job-Token"
+                value = CI_JOB_TOKEN
+            }
+        }
     }
-    maven(url = "https://jitpack.io")
 }
 
+// Kotlin build config, per target
 kotlin {
+    // do not remove, even if empty
     jvm() {
+        // uncomment if project contains Java source files
+        //        withJava()
     }
 
+    // Define "nodeJS" platform
     js("nodeJs") {
+        // build for nodeJS
         nodejs {}
     }
 
+    // Dependencies, per source set
     sourceSets {
         all {
             languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
