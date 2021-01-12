@@ -25,10 +25,8 @@ import client.utils.CServiceAdapter
 import client.utils.CollectionUId
 import client.utils.ConsistencyLevel
 import client.utils.TransactionBody
-import client.utils.coroutineBlocking
 import client.utils.Name
 import crdtlib.utils.ClientUId
-import crdtlib.utils.SimpleEnvironment
 import crdtlib.utils.VersionVector
 
 /**
@@ -49,7 +47,7 @@ class Session {
     /**
      * The environment linked to the session
      */
-    public val environment: ClientEnvironment
+    val environment: ClientEnvironment
 
     /**
      * The collections opened within this session.
@@ -144,11 +142,9 @@ class Session {
         }
 
         ActiveSession = null
-        coroutineBlocking {
-            CServiceAdapter.close(this.dbName)
-        }
 
         this.isClosed = true
+        CServiceAdapter.close(this.dbName)
     }
 
     companion object {
@@ -161,11 +157,10 @@ class Session {
         @Name("connect")
         fun connect(dbName: String, credentials: String): Session {
             if (ActiveSession != null) throw RuntimeException("Another session is already active.")
+//            if (!CServiceAdapter.connect(dbName)) throw RuntimeException("Connection to server failed.")
+            CServiceAdapter.connect(dbName)
 
             val clientUId = ClientUId("MY_ID")
-            coroutineBlocking {
-                if (!CServiceAdapter.connect(dbName)) throw RuntimeException("Connection to server failed.")
-            }
             val session = Session(dbName, clientUId)
             ActiveSession = session
             return session
