@@ -48,6 +48,7 @@ class CServiceAdapterTest : StringSpec({
         if (my_crdt is PNCounter) {
             my_crdt.increment(10)
             CServiceAdapter.updateObject("myapp", objectUId, my_crdt)
+            delay(300)
             my_crdt.decrement(5)
             CServiceAdapter.updateObject("myapp", objectUId, my_crdt)
             delay(300)
