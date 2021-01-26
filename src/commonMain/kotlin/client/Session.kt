@@ -41,6 +41,11 @@ class Session {
     private val dbName: String
 
     /**
+     * Server URL
+     */
+    private val serverUrl: String
+
+    /**
      * The client unique identifier
      */
     private val clientUId: ClientUId
@@ -64,8 +69,9 @@ class Session {
      * Private constructor.
      * @param clientUId the client unique identifier.
      */
-    private constructor(dbName: String, clientUId: ClientUId) {
+    private constructor(dbName: String, serverUrl: String, clientUId: ClientUId) {
         this.dbName = dbName
+        this.serverUrl = serverUrl
         this.clientUId = clientUId
         this.environment = ClientEnvironment(this, this.clientUId)
     }
@@ -88,6 +94,14 @@ class Session {
     @Name("getDbName")
     fun getDbName() : String {
         return this.dbName
+    }
+
+    /**
+     * Get the server URL
+     */
+    @Name("getServerURL")
+    fun getServerURL() : String {
+        return this.serverUrl
     }
 
     /**
@@ -145,7 +159,7 @@ class Session {
         ActiveSession = null
 
         this.isClosed = true
-        CServiceAdapter.close(this.dbName)
+        CServiceAdapter.close(this.dbName, this.serverUrl)
     }
 
     companion object {
@@ -156,13 +170,12 @@ class Session {
          * @return the client session to communicate with Concordant.
          */
         @Name("connect")
-        fun connect(dbName: String, credentials: String): Session {
+        fun connect(dbName: String, serverUrl: String, credentials: String): Session {
             if (ActiveSession != null) throw RuntimeException("Another session is already active.")
-//            if (!CServiceAdapter.connect(dbName)) throw RuntimeException("Connection to server failed.")
-            CServiceAdapter.connect(dbName)
+            CServiceAdapter.connect(dbName, serverUrl)
 
             val clientUId = ClientUId(generateUUId4())
-            val session = Session(dbName, clientUId)
+            val session = Session(dbName, serverUrl, clientUId)
             ActiveSession = session
             return session
         }

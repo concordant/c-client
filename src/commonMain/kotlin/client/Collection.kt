@@ -85,7 +85,7 @@ class Collection {
         val objectUId = CObjectUId(this.id, type, objectId)
 
         val obj : DeltaCRDT = DeltaCRDTFactory.createDeltaCRDT(type, this.attachedSession.environment)
-        CServiceAdapter.getObject(this.attachedSession.getDbName(), objectUId, obj)
+        CServiceAdapter.getObject(this.attachedSession.getDbName(), this.attachedSession.getServerURL(), objectUId, obj)
         this.openedObjects[obj] = Pair(objectUId, readOnly)
         return obj
     }
