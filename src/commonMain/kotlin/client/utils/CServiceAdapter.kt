@@ -40,11 +40,11 @@ class CServiceAdapter {
          * Connection to the database
          * @param dbName database name
          */
-        fun connect(dbName: String, serverUrl: String) {
+        fun connect(dbName: String, serviceUrl: String) {
             GlobalScope.launch {
                 val client = HttpClient()
                 val resp = client.post<String> {
-                    url("$serverUrl/create-app")
+                    url("$serviceUrl/api/create-app")
                     contentType(ContentType.Application.Json)
                     body = """{"appName":"$dbName"}"""
                 }
@@ -58,11 +58,11 @@ class CServiceAdapter {
          * @param objectUId crdt id
          * @param target the delta crdt in which distant value should be merged
          */
-        fun getObject(dbName: String, serverUrl: String, objectUId: CObjectUId, target: DeltaCRDT){
+        fun getObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, target: DeltaCRDT){
             GlobalScope.launch {
                 val client = HttpClient()
                 val crdtJson = client.post<String>{
-                    url("$serverUrl/get-object")
+                    url("$serviceUrl/api/get-object")
                     contentType(ContentType.Application.Json)
                     body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}"}"""
                 }
@@ -77,12 +77,12 @@ class CServiceAdapter {
          * @param objectUId CRDT id
          * @param crdt new crdt
          */
-        fun updateObject(dbName: String, serverUrl: String, objectUId: CObjectUId, crdt: DeltaCRDT){
+        fun updateObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, crdt: DeltaCRDT){
             GlobalScope.launch {
                 val client = HttpClient()
                 val crdtJson = crdt.toJson().replace("\"","\\\"")
                 client.post<String>{
-                    url("$serverUrl/update-object")
+                    url("$serviceUrl/api/update-object")
                     contentType(ContentType.Application.Json)
                     body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}", "document":"$crdtJson"}"""
                 }
@@ -94,18 +94,18 @@ class CServiceAdapter {
          * Close the connection to the database
          * @param dbName database name
          */
-        fun close(dbName: String, serverUrl: String){
+        fun close(dbName: String, serviceUrl: String){
         }
 
         /**
          * Delete the database
          * @param dbName database name
          */
-        fun delete(dbName: String, serverUrl: String) {
+        fun delete(dbName: String, serviceUrl: String) {
             GlobalScope.launch {
                 val client = HttpClient()
                 val resp = client.post<String> {
-                    url("$serverUrl/delete-app")
+                    url("$serviceUrl/api/delete-app")
                     contentType(ContentType.Application.Json)
                     body = """{"appName":"$dbName"}"""
                 }
