@@ -30,9 +30,9 @@ import kotlinx.coroutines.delay
 
 class CServiceAdapterTest : StringSpec({
     "connect to c-service create, write twice, read and delete" {
-        CServiceAdapter.delete("myapp")
+        CServiceAdapter.delete("myapp", "http://127.0.0.1:4000/api")
         delay(300)
-        CServiceAdapter.connect("myapp")
+        CServiceAdapter.connect("myapp", "http://127.0.0.1:4000/api")
         delay(300)
 
         val uid = ClientUId("clientid")
@@ -41,24 +41,24 @@ class CServiceAdapterTest : StringSpec({
         val objectUId = CObjectUId("myCollection", "PNCounter", "myPNCounter")
 
         val my_crdt : DeltaCRDT = DeltaCRDTFactory.createDeltaCRDT("PNCounter", my_env)
-        CServiceAdapter.getObject("myapp", objectUId, my_crdt)
+        CServiceAdapter.getObject("myapp", "http://127.0.0.1:4000/api", objectUId, my_crdt)
         delay(300)
         my_crdt.toJson().shouldBe("{\"type\":\"PNCounter\",\"metadata\":{\"increment\":[],\"decrement\":[]},\"value\":0}")
 
         if (my_crdt is PNCounter) {
             my_crdt.increment(10)
-            CServiceAdapter.updateObject("myapp", objectUId, my_crdt)
+            CServiceAdapter.updateObject("myapp", "http://127.0.0.1:4000/api", objectUId, my_crdt)
             my_crdt.decrement(5)
-            CServiceAdapter.updateObject("myapp", objectUId, my_crdt)
+            CServiceAdapter.updateObject("myapp", "http://127.0.0.1:4000/api", objectUId, my_crdt)
             delay(300)
 
             val my_crdt2 : DeltaCRDT = DeltaCRDTFactory.createDeltaCRDT("PNCounter", my_env)
-            CServiceAdapter.getObject("myapp", objectUId, my_crdt2)
+            CServiceAdapter.getObject("myapp", "http://127.0.0.1:4000/api", objectUId, my_crdt2)
             delay(300)
             val text = "{\"type\":\"PNCounter\",\"metadata\":{\"increment\":[{\"name\":\"clientid\"},{\"first\":10,\"second\":{\"uid\":{\"name\":\"clientid\"},\"cnt\":-2147483647}}],\"decrement\":[{\"name\":\"clientid\"},{\"first\":5,\"second\":{\"uid\":{\"name\":\"clientid\"},\"cnt\":-2147483646}}]},\"value\":5}"
             my_crdt2.toJson().shouldBe(text)
         }
 
-        CServiceAdapter.close("myapp")
+        CServiceAdapter.close("myapp", "http://127.0.0.1:4000/api")
     }
 })
