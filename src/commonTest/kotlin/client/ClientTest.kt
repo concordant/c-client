@@ -30,14 +30,14 @@ import io.kotest.matchers.nulls.*
 class ClientTest : StringSpec({
     "opened session should be active session" {
         ActiveSession.shouldBeNull()
-        val session = Session.connect("mydatabase", "credentials")
+        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         ActiveSession.shouldBe(session)
         session.close()
         ActiveSession.shouldBeNull()
     }
 
     "use a closed session should fail" {
-        val session = Session.connect("mydatabase", "credentials")
+        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         session.close()
         shouldThrow<RuntimeException> {
             session.openCollection("mycollection", true)
@@ -45,7 +45,7 @@ class ClientTest : StringSpec({
     }
 
     "use a closed collection should fail" {
-        val session = Session.connect("mydatabase", "credentials")
+        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", true)
         collection.close()
         shouldThrow<RuntimeException> {
@@ -55,7 +55,7 @@ class ClientTest : StringSpec({
     }
 
 //    "use a closed object should fail" {
-//        val session = Session.connect("mydatabase", "credentials")
+//        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
 //        val collection = session.openCollection("mycollection", false)
 //        val deltacrdt = collection.open("mycounter", "PNCounter", false) { _, _ -> }
 //        deltacrdt.close()
@@ -70,7 +70,7 @@ class ClientTest : StringSpec({
 //    }
 
     "close is done in cascade from session" {
-        val session = Session.connect("mydatabase", "credentials")
+        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounter1", "PNCounter", false) { _, _ -> Unit }
         session.close()
@@ -87,7 +87,7 @@ class ClientTest : StringSpec({
     }
 
     "close is done in cascade from collection" {
-        val session = Session.connect("mydatabase", "credentials")
+        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounter1", "PNCounter", false) { _, _ -> Unit }
         collection.close()
@@ -102,15 +102,15 @@ class ClientTest : StringSpec({
     }
 
     "open a second session should fail" {
-        val session1 = Session.connect("mydatabase1", "credentials")
+        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         shouldThrow<RuntimeException> {
-            Session.connect("mydatabase2", "credentials")
+            Session.connect("mydatabase2", "http://127.0.0.1:4000", "credentials")
         }
-        session1.close()
+        session.close()
     }
 
     "open a second collection should fail" {
-        val session = Session.connect("mydatabase", "credentials")
+        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         session.openCollection("mycollection1", true)
         shouldThrow<RuntimeException> {
             session.openCollection("mycollection2", true)
@@ -120,7 +120,7 @@ class ClientTest : StringSpec({
     }
 
     "open a transaction in a transaction should fail" {
-        val session = Session.connect("mydatabase", "credentials")
+        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         shouldThrow<RuntimeException> {
             session.transaction(ConsistencyLevel.RC) {
                 session.transaction(ConsistencyLevel.RC) {
@@ -131,7 +131,7 @@ class ClientTest : StringSpec({
     }
 
     "open read collection then open write object should fail" {
-        val session = Session.connect("mydatabase", "credentials")
+        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", true)
         shouldThrow<RuntimeException> {
             collection.open("mycounter", "PNCounter", false) { _, _ -> Unit }
@@ -140,7 +140,7 @@ class ClientTest : StringSpec({
     }
 
     "open a collection within a transaction should fail" {
-        val session = Session.connect("mydatabase", "credentials")
+        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         shouldThrow<RuntimeException> {
             session.transaction(ConsistencyLevel.RC) {
                 session.openCollection("mycollection", true)
@@ -150,7 +150,7 @@ class ClientTest : StringSpec({
     }
 
     "open an object within a transaction should fail" {
-        val session = Session.connect("mydatabase", "credentials")
+        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", true)
         shouldThrow<RuntimeException> {
             session.transaction(ConsistencyLevel.RC) {
@@ -161,7 +161,7 @@ class ClientTest : StringSpec({
     }
 
     "operation on an object outside a transaction should fail" {
-        val session = Session.connect("mydatabase", "credentials")
+        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounter", "PNCounter", false) { _, _ -> Unit }
         shouldThrow<RuntimeException> {
@@ -178,7 +178,7 @@ class ClientTest : StringSpec({
     }
 
     "update a read-only object should fail" {
-        val session = Session.connect("mydatabase", "credentials")
+        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounter", "PNCounter", true) { _, _ -> Unit }
         var value = 1
