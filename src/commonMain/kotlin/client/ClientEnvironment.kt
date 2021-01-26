@@ -52,7 +52,7 @@ class ClientEnvironment(val session: Session, uid: ClientUId) : SimpleEnvironmen
         val objectUId = infos.first
 
         // Get distant version of the object
-        CServiceAdapter.getObject(session.getDbName(), objectUId, obj)
+        CServiceAdapter.getObject(session.getDbName(), session.getServiceUrl(), objectUId, obj)
     }
 
     /**
@@ -80,6 +80,6 @@ class ClientEnvironment(val session: Session, uid: ClientUId) : SimpleEnvironmen
         val objectUId = infos.first
 
         // Push the new local version to backend
-        CServiceAdapter.updateObject(session.getDbName(), objectUId, obj)
+        CServiceAdapter.updateObject(session.getDbName(), session.getServiceUrl(), objectUId, obj)
     }
 }
