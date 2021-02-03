@@ -68,8 +68,8 @@ class CServiceAdapter {
                 }
                 client.close()
                 crdtJson = crdtJson.removePrefix("\"").removeSuffix("\"")
-                crdtJson = crdtJson.replace("\\\\\\\"", "\\\\\""); // replace \\\"with \\"
-                crdtJson = crdtJson.replace("\\\\'", "'"); // replace \\' with \'
+                crdtJson = crdtJson.replace("\\\\\\\"", "\\\\\""); // replace \\\" with \\"
+                crdtJson = crdtJson.replace("\\\\'", "'"); // replace \\' with '
                 crdtJson = crdtJson.replace("\\\\n", "\\n"); // replace \\n with \n
                 crdtJson = crdtJson.replace("\\\\\\", "\\\\"); // replace \\\ with \\
                 crdtJson = crdtJson.replace("\\\"", "\""); // replace \" with "
@@ -90,7 +90,7 @@ class CServiceAdapter {
                 crdtJson = crdtJson.replace("\\\"", "\\\\\""); // replace \" with \\"
                 crdtJson = crdtJson.replace("'", "\\\\'"); // replace ' with \\'
                 crdtJson = crdtJson.replace("\\n", "\\\\n"); // replace \n with \\n
-                crdtJson = crdtJson.replace("\"", "\\\""); // replace "with \"
+                crdtJson = crdtJson.replace("\"", "\\\""); // replace " with \"
                 client.post<String>{
                     url("$serviceUrl/api/update-object")
                     contentType(ContentType.Application.Json)
