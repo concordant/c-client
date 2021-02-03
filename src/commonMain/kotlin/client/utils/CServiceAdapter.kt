@@ -61,13 +61,19 @@ class CServiceAdapter {
         fun getObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, target: DeltaCRDT){
             GlobalScope.launch {
                 val client = HttpClient()
-                val crdtJson = client.post<String>{
+                var crdtJson = client.post<String>{
                     url("$serviceUrl/api/get-object")
                     contentType(ContentType.Application.Json)
                     body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}"}"""
                 }
                 client.close()
-                target.merge(DeltaCRDT.fromJson(crdtJson.removePrefix("\"").removeSuffix("\"").replace("""\\"""","""\"""")))
+                crdtJson = crdtJson.removePrefix("\"").removeSuffix("\"")
+                crdtJson = crdtJson.replace("\\\\\\\"", "\\\\\""); // replace \\\" with \\"
+                crdtJson = crdtJson.replace("\\\\'", "'"); // replace \\' with '
+                crdtJson = crdtJson.replace("\\\\n", "\\n"); // replace \\n with \n
+                crdtJson = crdtJson.replace("\\\\\\", "\\\\"); // replace \\\ with \\
+                crdtJson = crdtJson.replace("\\\"", "\""); // replace \" with "
+                target.merge(DeltaCRDT.fromJson(crdtJson));
             }
         }
 
@@ -80,7 +86,11 @@ class CServiceAdapter {
         fun updateObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, crdt: DeltaCRDT){
             GlobalScope.launch {
                 val client = HttpClient()
-                val crdtJson = crdt.toJson().replace("\"","\\\"")
+                var crdtJson = crdt.toJson().replace("\\\\", "\\\\\\"); // replace \\ with \\\
+                crdtJson = crdtJson.replace("\\\"", "\\\\\""); // replace \" with \\"
+                crdtJson = crdtJson.replace("'", "\\\\'"); // replace ' with \\'
+                crdtJson = crdtJson.replace("\\n", "\\\\n"); // replace \n with \\n
+                crdtJson = crdtJson.replace("\"", "\\\""); // replace " with \"
                 client.post<String>{
                     url("$serviceUrl/api/update-object")
                     contentType(ContentType.Application.Json)
