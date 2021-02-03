@@ -19,7 +19,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 description = "Concordant C-Client"
 group = "concordant"
-version = "1.1.0"
+version = "1.1.1"
 
 plugins {
     kotlin("multiplatform") version "1.4.20"
