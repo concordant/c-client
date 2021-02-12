@@ -1,3 +1,0 @@
-// The function type accepted for a transaction body
-// Unit == void in Kotlin
-type TransactionBody = () -> Unit
