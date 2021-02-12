@@ -26,3 +26,20 @@ publish:
   # use only artifacts from build job
   dependencies:
     - build
+
+pages:
+  stage: deploy
+  script:
+    - gradle dokkaHtml
+    - mv build/dokka/html public
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+  cache:
+    # only _pull_ global_cache
+    <<: *global_cache
+    policy: pull
+  # do not download artifacts from other jobs
+  dependencies: []
