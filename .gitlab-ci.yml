@@ -35,8 +35,6 @@ pages:
   artifacts:
     paths:
       - public
-  only:
-    - master
   cache:
     # only _pull_ global_cache
     <<: *global_cache
