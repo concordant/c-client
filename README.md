@@ -4,24 +4,21 @@
 
 Concordant client library in Kotlin for the Concordant platform API.
 
-## Requirements
-
-- Download and install Gradle from [Gradle website](https://gradle.org/install/);
-
-## Project overview
-
-The code of the version v1 is in the directory *src/*.
-
-## Usage
-
 This library is delivered as an NPM package and a Maven in [Gitlab Packages](
 https://gitlab.inria.fr/concordant/software/c-client/-/packages)
 (as a private registry).
 
-### NPM install
+## Requirements
+
+- Download and install Gradle from [Gradle website](https://gradle.org/install/);
+
+## JavaScript/TypeScript and NPM
+
+### Install
 
 Get a deploy token or personal access token from Gitlab,
 with at least the read_package_registry scope.  
+
 Then setup authentication:
 ``` shell
 $ npm config set @concordant:registry "https://gitlab.inria.fr/api/v4/packages/npm/"
@@ -33,9 +30,26 @@ Install the package:
 $ npm i @concordant/c-client
 ```
 
-And use it:
-``` typescript
+### Usage
+
+```typescript
 import * from @concordant/c-client;
+
+// Open a session
+let session = client.Session.Companion.connect("mydatabase", "http://url-to-c-service", "credentials");
+
+// Open a collection of objects
+let collection = session.openCollection("mycollection", false);
+
+// Open an object within the collection
+let cntr = collection.open("mycounter", "PNCounter", false, function () {return});
+
+// Compute with one or more objects within atomic transactions
+this.props.session.transaction(client.utils.ConsistencyLevel.None, () => {
+    // Access objects here
+    cntr.increment(10);
+    let val = cntr.get();
+});
 ```
 
 ## Build project
