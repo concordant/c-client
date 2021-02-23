@@ -142,6 +142,7 @@ tasks.withType<KotlinCompile> {
 
 npmPublishing {
     organization = group as String
+    readme = file("README.md")
     repositories {
         repository("Gitlab") {
             access = RESTRICTED
