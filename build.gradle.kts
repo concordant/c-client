@@ -19,7 +19,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 description = "Concordant C-Client"
 group = "concordant"
-version = "1.1.1"
+version = "1.1.2"
 
 plugins {
     kotlin("multiplatform") version "1.4.20"
@@ -29,8 +29,8 @@ plugins {
 }
 
 repositories {
-    jcenter()
     mavenCentral()
+    // for ts-generator
     maven(url = "https://jitpack.io")
     maven {
         url = uri("https://gitlab.inria.fr/api/v4/projects/18591/packages/maven")
@@ -144,8 +144,13 @@ npmPublishing {
     organization = group as String
     repositories {
         repository("Gitlab") {
+            access = RESTRICTED
             registry = uri("https://gitlab.inria.fr/api/v4/projects/${System.getenv("CI_PROJECT_ID")}/packages/npm")
             authToken = System.getenv("CI_JOB_TOKEN")
+        }
+        repository("npmjs") {
+            registry = uri("https://registry.npmjs.org")
+            authToken = System.getenv("NPMJS_AUTH_TOKEN")
         }
     }
     publications {
@@ -153,6 +158,10 @@ npmPublishing {
             packageJson {
                 types = "c-client.d.ts"
                 "description" to project.description
+                license = "MIT"
+                "bugs" to jsonObject {
+                    "email" to "support@concordant.io"
+                }
             }
         }
     }
