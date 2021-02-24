@@ -29,6 +29,7 @@ plugins {
 }
 
 repositories {
+    jcenter()
     mavenCentral()
     // for ts-generator
     maven(url = "https://jitpack.io")
