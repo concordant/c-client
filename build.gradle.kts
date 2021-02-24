@@ -159,6 +159,8 @@ npmPublishing {
             packageJson {
                 types = "c-client.d.ts"
                 "description" to project.description
+                keywords = mutableListOf("concordant", "crdt", "conflict-free", "replicated datatypes")
+                homepage = "concordant.io"
                 license = "MIT"
                 "bugs" to jsonObject {
                     "email" to "support@concordant.io"
