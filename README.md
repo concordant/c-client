@@ -80,9 +80,9 @@ code is not affected by what follows.
 The `Session` API is the following:
 
 ``` typescript
-let session = Session.Companion.connect(database, addressToCService, credentials)
+let session = Session.Companion.connect(database, addressToCService, credentials);
 ...
-session.close()
+session.close();
 ```
 
 `Session.Companion.connect` requires a valid database, Concordant Service
@@ -109,12 +109,12 @@ object, its type must be specified.
 The `Collection` API is the following:
 
 ``` typescript
-let collection = session.openCollection(collectionUId, readOnly)
+let collection = session.openCollection(collectionUId, readOnly);
 ...
 // readOnly can be true only if the collection is mutable
-let object = collection.open(objectId, type, readOnly, handler)
+let object = collection.open(objectId, type, readOnly, handler);
 ...
-collection.close()
+collection.close();
 ```
 
 Above, `type` is the type of the object (e.g., `MVMap`, `PNCounter`), and
