@@ -29,7 +29,7 @@ Import it in your code:
 import * from @concordant/c-client;
 ```
 
-## Concondant API
+## Concordant API
 
 An application stores information in *objects*. In Concordant, an object is an
 instance of a CRDT, and is managed by C-CRDTlib (see its documentation for more
