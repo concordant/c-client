@@ -62,7 +62,8 @@ application execution lifecycle is as follows:
 In future versions, Concordant will support opening multiple collections, and
 will provide finer control over the pulling, pushing and merging of updates.
 
-We now explain the API in more detail.
+We now explain the API in more detail. See also the [code documentation](
+https://concordant.gitlabpages.inria.fr/software/c-client/c-client/)
 
 ### Session
 
