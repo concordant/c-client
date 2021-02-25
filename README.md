@@ -194,9 +194,9 @@ library.
 An object is of a specific (CRDT) type, with the interface expected by its
 semantics (called its *semantic API*). For instance, the semantic API of a
 Counter supports the `increment(nb)`, `decrement(nb)` and `get()` methods; an
-RGA (a list) supports methods `insertAt(…)`, `removeAt(…)` and `get()`. A
-complete list of available object types, and their specific semantic API is
-provided in the documentation of the C-CRDTlib.
+RGA (a list) supports methods `insertAt(idx, elem)`, `removeAt(idx)` and
+`get()`. A complete list of available object types, and their specific semantic
+API is provided in the documentation of the C-CRDTlib.
 
 The client can access an open object, through its semantic API, within a
 transaction. Note that:
