@@ -24,6 +24,11 @@ Install the package:
 $ npm i @concordant/c-client
 ```
 
+Import it in your code:
+``` typescript
+import * from @concordant/c-client;
+```
+
 ## Concondant API
 
 An application stores information in *objects*. In Concordant, an object is an
@@ -74,7 +79,7 @@ code is not affected by what follows.
 
 The `Session` API is the following:
 
-```typescript
+``` typescript
 let session = Session.Companion.connect(database, addressToCService, credentials)
 ...
 session.close()
@@ -103,7 +108,7 @@ object, its type must be specified.
 
 The `Collection` API is the following:
 
-```typescript
+``` typescript
 let collection = session.openCollection(collectionUId, readOnly)
 ...
 // readOnly can be true only if the collection is mutable
@@ -132,7 +137,7 @@ its methods `insertAt`, `removeAt` and `get`.
 Notifications are not yet implemented; therefore, the notification handler
 should look like this:
 
-```typescript
+``` typescript
 // Declaring an handler function
 function handler () {
     return;
@@ -161,7 +166,7 @@ following guarantees:
 
 The `Transaction` API for type `None` is the following:
 
-```typescript
+``` typescript
 ... // open the resources that will be required in the transaction...
 
 session.transaction (ConsistencyLevel.None, () => {
