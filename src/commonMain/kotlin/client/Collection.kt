@@ -77,7 +77,7 @@ class Collection {
      * @param handler currently not used.
      */
     @Name("open")
-    fun open(objectId: String, type:String, readOnly: Boolean, handler: NotificationHandler): DeltaCRDT {
+    fun open(objectId: String, type: String, readOnly: Boolean, handler: NotificationHandler = { _, _ -> Unit }): DeltaCRDT {
         if (ActiveTransaction != null) throw RuntimeException("An object cannot be open within a transaction.")
         if (this.isClosed) throw RuntimeException("This collection has been closed.")
         if (this.readOnly && !readOnly) throw RuntimeException("Collection has been opened in read-only mode.")
