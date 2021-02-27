@@ -49,7 +49,7 @@ class ClientTest : StringSpec({
         val collection = session.openCollection("mycollection", true)
         collection.close()
         shouldThrow<RuntimeException> {
-            collection.open("mycounter", "PNCounter", false) { _, _ -> Unit }
+            collection.open("mycounter", "PNCounter", false)
         }
         session.close()
     }
@@ -72,10 +72,10 @@ class ClientTest : StringSpec({
     "close is done in cascade from session" {
         val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", false)
-        val deltacrdt = collection.open("mycounter1", "PNCounter", false) { _, _ -> Unit }
+        val deltacrdt = collection.open("mycounter1", "PNCounter", false)
         session.close()
         shouldThrow<RuntimeException> {
-            collection.open("mycounter2", "PNCounter", false) { _, _ -> Unit }
+            collection.open("mycounter2", "PNCounter", false)
         }
         shouldThrow<RuntimeException> {
             session.transaction(ConsistencyLevel.RC) {
@@ -89,7 +89,7 @@ class ClientTest : StringSpec({
     "close is done in cascade from collection" {
         val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", false)
-        val deltacrdt = collection.open("mycounter1", "PNCounter", false) { _, _ -> Unit }
+        val deltacrdt = collection.open("mycounter1", "PNCounter", false)
         collection.close()
         shouldThrow<RuntimeException> {
             session.transaction(ConsistencyLevel.RC) {
@@ -134,7 +134,7 @@ class ClientTest : StringSpec({
         val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", true)
         shouldThrow<RuntimeException> {
-            collection.open("mycounter", "PNCounter", false) { _, _ -> Unit }
+            collection.open("mycounter", "PNCounter", false)
         }
         session.close()
     }
@@ -154,7 +154,7 @@ class ClientTest : StringSpec({
         val collection = session.openCollection("mycollection", true)
         shouldThrow<RuntimeException> {
             session.transaction(ConsistencyLevel.RC) {
-                collection.open("mycounter", "PNCounter", false) { _, _ -> Unit }
+                collection.open("mycounter", "PNCounter", false)
             }
         }
         session.close()
@@ -163,7 +163,7 @@ class ClientTest : StringSpec({
     "operation on an object outside a transaction should fail" {
         val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", false)
-        val deltacrdt = collection.open("mycounter", "PNCounter", false) { _, _ -> Unit }
+        val deltacrdt = collection.open("mycounter", "PNCounter", false)
         shouldThrow<RuntimeException> {
             if (deltacrdt is PNCounter) {
                 deltacrdt.get()
@@ -180,7 +180,7 @@ class ClientTest : StringSpec({
     "update a read-only object should fail" {
         val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", false)
-        val deltacrdt = collection.open("mycounter", "PNCounter", true) { _, _ -> Unit }
+        val deltacrdt = collection.open("mycounter", "PNCounter", true)
         var value = 1
         session.transaction(ConsistencyLevel.RC) {
             if (deltacrdt is PNCounter) {
