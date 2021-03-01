@@ -19,7 +19,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 description = "Concordant C-Client"
 group = "concordant"
-version = "1.1.2"
+version = "1.1.4"
 
 plugins {
     kotlin("multiplatform") version "1.4.20"
@@ -29,6 +29,7 @@ plugins {
 }
 
 repositories {
+    jcenter()
     mavenCentral()
     // for ts-generator
     maven(url = "https://jitpack.io")
