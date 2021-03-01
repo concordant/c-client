@@ -1,2 +1,0 @@
-// Collection unique identifiers
-type CollectionUId = String
