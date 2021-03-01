@@ -44,9 +44,9 @@ let session = Session.Companion.connect(
 let collection = session.openCollection("mycollection", false);
 
 // An object must be opened before using it in a transaction.
-// Open the PNCounter with objectID "mycounter", with read/write access.
+// Open the PNCounter with objectId "mycounter", with read/write access.
 // If it does not exist, it is created in a type-specific default state.
-// Note that objects of different types may coexist under a same objectID.
+// Note that objects of different types may coexist under a same objectId.
 let cntr = collection.open("mycounter", "PNCounter", false);
 
 // Objects values can be accessed/updated in a transaction only.
@@ -124,9 +124,9 @@ client can *pull* remote updates into the current session.
 A *collection* is a set of related Concordant objects, stored in a database.
 
 In the database, an object is identified by its triplet key
-`(collectionUId, objectID, type)`.
+`(collectionUId, objectId, type)`.
 Note that objects of different types may coexist in a collection
-under a same objectID.
+under a same objectId.
 
 **Note:** Currently, only one collection may be open at a time.
 
