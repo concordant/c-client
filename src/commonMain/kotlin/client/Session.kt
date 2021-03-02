@@ -53,7 +53,7 @@ class Session {
     /**
      * The environment linked to the session
      */
-    val environment: ClientEnvironment
+    internal val environment: ClientEnvironment
 
     /**
      * The collections opened within this session.
