@@ -19,117 +19,17 @@
 
 package client
 
-import client.utils.ActiveSession
 import client.utils.ConsistencyLevel
 import crdtlib.crdt.PNCounter
-import io.kotest.assertions.throwables.*
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.*
-import io.kotest.matchers.nulls.*
-import kotlinx.coroutines.delay
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.shouldBe
 
-class ClientTest : StringSpec({
-    "opened session should be active session" {
-        ActiveSession.shouldBeNull()
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
-        ActiveSession.shouldBe(session)
-        session.close()
-        ActiveSession.shouldBeNull()
-    }
-
-    "use a closed session should fail" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
-        session.close()
-        shouldThrow<RuntimeException> {
-            session.openCollection("mycollection", true)
-        }
-    }
-
-    "use a closed collection should fail" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
-        val collection = session.openCollection("mycollection", true)
-        collection.close()
-        shouldThrow<RuntimeException> {
-            collection.open("mycounter", "PNCounter", false)
-        }
-        session.close()
-    }
-
-//    "use a closed object should fail" {
-//        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
-//        val collection = session.openCollection("mycollection", false)
-//        val deltacrdt = collection.open("mycounter", "PNCounter", false) { _, _ -> }
-//        deltacrdt.close()
-//        shouldThrow<RuntimeException> {
-//            session.transaction(ConsistencyLevel.RC) {
-//                if (deltacrdt is PNCounter) {
-//                    deltacrdt.increment(12)
-//                }
-//            }
-//        }
-//        session.close()
-//    }
-
-    "close is done in cascade from session" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
-        val collection = session.openCollection("mycollection", false)
-        val deltacrdt = collection.open("mycounter1", "PNCounter", false)
-        session.close()
-        shouldThrow<RuntimeException> {
-            collection.open("mycounter2", "PNCounter", false)
-        }
-        shouldThrow<RuntimeException> {
-            session.transaction(ConsistencyLevel.RC) {
-                if (deltacrdt is PNCounter){
-                    deltacrdt.increment(12)
-                }
-            }
-        }
-    }
-
-    "close is done in cascade from collection" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
-        val collection = session.openCollection("mycollection", false)
-        val deltacrdt = collection.open("mycounter1", "PNCounter", false)
-        collection.close()
-        shouldThrow<RuntimeException> {
-            session.transaction(ConsistencyLevel.RC) {
-                if (deltacrdt is PNCounter) {
-                    deltacrdt.increment(12)
-                }
-            }
-        }
-        session.close()
-    }
-
-    "open a second session should fail" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
-        shouldThrow<RuntimeException> {
-            Session.connect("mydatabase2", "http://127.0.0.1:4000", "credentials")
-        }
-        session.close()
-    }
-
-    "open a second collection should fail" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
-        session.openCollection("mycollection1", true)
-        shouldThrow<RuntimeException> {
-            session.openCollection("mycollection2", true)
-        }
-        ActiveSession.shouldBe(session)
-        session.close()
-    }
-
-    "open a transaction in a transaction should fail" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
-        shouldThrow<RuntimeException> {
-            session.transaction(ConsistencyLevel.RC) {
-                session.transaction(ConsistencyLevel.RC) {
-                }
-            }
-        }
-        session.close()
-    }
+/**
+ * Tests suite for Concordant objects usage.
+ */
+class ObjectTest : StringSpec({
 
     "open read collection then open write object should fail" {
         val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
@@ -140,11 +40,12 @@ class ClientTest : StringSpec({
         session.close()
     }
 
-    "open a collection within a transaction should fail" {
+    "open a transaction in a transaction should fail" {
         val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         shouldThrow<RuntimeException> {
-            session.transaction(ConsistencyLevel.RC) {
-                session.openCollection("mycollection", true)
+            session.transaction(ConsistencyLevel.None) {
+                session.transaction(ConsistencyLevel.None) {
+                }
             }
         }
         session.close()
@@ -154,7 +55,7 @@ class ClientTest : StringSpec({
         val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", true)
         shouldThrow<RuntimeException> {
-            session.transaction(ConsistencyLevel.RC) {
+            session.transaction(ConsistencyLevel.None) {
                 collection.open("mycounter", "PNCounter", false)
             }
         }
@@ -183,14 +84,14 @@ class ClientTest : StringSpec({
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounter", "PNCounter", true)
         var value = 1
-        session.transaction(ConsistencyLevel.RC) {
+        session.transaction(ConsistencyLevel.None) {
             if (deltacrdt is PNCounter) {
                 value = deltacrdt.get()
             }
         }
         value.shouldBe(0)
         shouldThrow<RuntimeException> {
-            session.transaction(ConsistencyLevel.RC) {
+            session.transaction(ConsistencyLevel.None) {
                 if (deltacrdt is PNCounter) {
                     deltacrdt.increment(12)
                 }
@@ -199,34 +100,48 @@ class ClientTest : StringSpec({
         session.close()
     }
 
-    "PNCounter should work" {
-        val session = Session.connect("mydatabase", "credentials")
+    "open two times an object should work" {
+        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", false)
-        val deltacrdt = collection.open("mycounter", "PNCounter", false) { _, _ -> Unit }
-        var value = 1
-        session.transaction(ConsistencyLevel.RC) {
+        val deltacrdt = collection.open("mycounterwork", "PNCounter", false)
+        var value1 = 1
+        session.transaction(ConsistencyLevel.None) {
             if (deltacrdt is PNCounter) {
-                value = deltacrdt.get()
+                value1 = deltacrdt.get()
             }
         }
-        value.shouldBe(0)
-        session.transaction(ConsistencyLevel.RC) {
+        value1.shouldBe(0)
+        session.transaction(ConsistencyLevel.None) {
             if (deltacrdt is PNCounter) {
                 deltacrdt.increment(12)
                 deltacrdt.decrement(3)
-                value = deltacrdt.get()
+                value1 = deltacrdt.get()
             }
         }
-        value.shouldBe(9)
-        val deltacrdt2 = collection.open("mycounter", "PNCounter", false) { _, _ -> Unit }
-        delay(300)
+        value1.shouldBe(9)
+        val deltacrdt2 = collection.open("mycounterwork", "PNCounter", false)
         var value2 = 1
-        session.transaction(ConsistencyLevel.RC) {
+        session.transaction(ConsistencyLevel.None) {
             if (deltacrdt2 is PNCounter) {
                 value2 = deltacrdt2.get()
             }
         }
-        value2.shouldBe(9)
+        value2.shouldBe(0)
         session.close()
     }
+
+//    "use a closed object should fail" {
+//        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
+//        val collection = session.openCollection("mycollection", false)
+//        val deltacrdt = collection.open("mycounter", "PNCounter", false)
+//        deltacrdt.close()
+//        shouldThrow<RuntimeException> {
+//            session.transaction(ConsistencyLevel.None) {
+//                if (deltacrdt is PNCounter) {
+//                    deltacrdt.increment(12)
+//                }
+//            }
+//        }
+//        session.close()
+//    }
 })
