@@ -32,7 +32,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
- *
+ * Adapter to the Concordant service (C-Service).
  */
 class CServiceAdapter {
     companion object {
