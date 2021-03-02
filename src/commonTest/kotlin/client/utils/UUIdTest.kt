@@ -20,12 +20,29 @@
 package client.utils
 
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.shouldBe
+import io.kotest.matchers.collections.shouldBeUnique
+import io.kotest.matchers.string.shouldMatch
 
+/**
+ * Test suite for Universal Unique Identifier (UUId).
+ */
 class UUIdTest : StringSpec({
-    "different generated uuid are really different" {
+
+    /**
+     * Creates different UUIds and tests if they are well formed.
+     */
+    "uuids are well formed" {
+        for (i in "1..20") {
+            generateUUId4().shouldMatch("[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}")
+        }
+    }
+
+    /**
+     * Creates UUIds and tests if they are all distinct.
+     */
+    "different generated uuids are really different" {
         List(20) {
             generateUUId4()
-        }.toSet().size.shouldBe(20)
+        }.shouldBeUnique()
     }
 })
