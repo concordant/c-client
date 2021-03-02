@@ -26,7 +26,7 @@ package client.utils
 */
 internal fun randomHexString(length: Int): String {
     return List(length) {
-        (('a'..'z') + ('0'..'9')).random()
+        (('a'..'f') + ('0'..'9')).random()
     }.joinToString("")
 }
 
