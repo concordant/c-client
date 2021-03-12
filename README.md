@@ -1,5 +1,7 @@
 # Concordant Client Library
 
+[![](https://gitlab.inria.fr/concordant/software/c-client/badges/master/pipeline.svg)](
+https://gitlab.inria.fr/concordant/software/c-client/-/commits/master)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
 
 Concordant client library in Kotlin for the Concordant platform API.
