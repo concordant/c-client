@@ -57,8 +57,8 @@ class CollectionTest : StringSpec({
     }
 
     "open a collection within a transaction should fail" {
-        shouldThrow<RuntimeException> {
-            session.transaction(ConsistencyLevel.None) {
+        session.transaction(ConsistencyLevel.None) {
+            shouldThrow<RuntimeException> {
                 session.openCollection("mycollection", true)
             }
         }
