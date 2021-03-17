@@ -100,6 +100,9 @@ class ObjectTest : StringSpec({
         session.close()
     }
 
+    // Opening twice an object should return the same object
+    // instead of a new copy.
+    // This test will need to be updated as soon as it is done.
     "open two times an object should work" {
         val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
         val collection = session.openCollection("mycollection", false)
