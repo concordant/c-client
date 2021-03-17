@@ -67,8 +67,8 @@ class TransactionTest : StringSpec({
     }
 
     "open a transaction in a transaction should fail" {
-        shouldThrow<RuntimeException> {
-            session.transaction(ConsistencyLevel.None) {
+        session.transaction(ConsistencyLevel.None) {
+            shouldThrow<RuntimeException> {
                 session.transaction(ConsistencyLevel.None) {
                 }
             }
