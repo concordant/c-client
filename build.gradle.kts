@@ -17,40 +17,41 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-description = "Concordant C-Client"
-group = "concordant"
+description = "The Concordant multiplatform library, providing the high-level application-facing API"
+group = "io.concordant"
 version = "1.1.5"
 
 plugins {
     kotlin("multiplatform") version "1.4.20"
     kotlin("plugin.serialization") version "1.4.20"
     id("org.jetbrains.dokka") version "1.4.10.2"
+    id("maven-publish")
+    id("signing")
     id("lt.petuska.npm.publish") version "1.1.1"
 }
 
 repositories {
-    jcenter()
-    mavenCentral()
-    // for ts-generator
-    maven(url = "https://jitpack.io")
-    maven {
-        url = uri("https://gitlab.inria.fr/api/v4/projects/18591/packages/maven")
-        authentication {
-            create<HttpHeaderAuthentication>("header")
-        }
-        // authentication by CI or private token
-        credentials(HttpHeaderCredentials::class) {
-            val CI_JOB_TOKEN = System.getenv("CI_JOB_TOKEN")
-            if (CI_JOB_TOKEN == null){
+    // use private repository for CRDTlib if token is available;
+    // order matters
+    if (project.hasProperty("gitLabPrivateToken")){
+        maven {
+            url = uri("https://gitlab.inria.fr/api/v4/projects/18591/packages/maven")
+            authentication {
+                create<HttpHeaderAuthentication>("header")
+            }
+            // authentication by CI or private token
+            credentials(HttpHeaderCredentials::class) {
                 name = "Private-Token"
                 val gitLabPrivateToken: String by project
                 value = gitLabPrivateToken
-            } else {
-                name = "Job-Token"
-                value = CI_JOB_TOKEN
             }
         }
     }
+    mavenCentral()
+    // still needed by Dokka
+    jcenter()
+    // for ts-generator
+    maven(url = "https://jitpack.io")
 }
 
 // Kotlin build config, per target
@@ -75,7 +76,7 @@ kotlin {
 
         commonMain {
             dependencies {
-                implementation("concordant:c-crdtlib:1.+")
+                implementation("io.concordant:c-crdtlib:1.+")
                 implementation("io.ktor:ktor-client-core:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
             }
@@ -129,6 +130,10 @@ kotlin {
             main = "client.GenerateTSKt"
             outputs.file("$buildDir/js/packages/c-client-nodeJs/kotlin/c-client.d.ts")
         }
+        register<Jar>("javadocJar") {
+            from(dokkaHtml)
+            archiveClassifier.set("javadoc")
+        }
     }
 
 }
@@ -141,8 +146,70 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+publishing {
+    publications {
+        withType<MavenPublication>().configureEach {
+            // MavenCentral requires javadoc and additional metadata
+            artifact(tasks.named("javadocJar"))
+
+            pom {
+                name.set("%s:%s".format(project.group, project.name))
+                description.set(project.description)
+                url.set("https://concordant.io")
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("http://www.opensource.org/licenses/mit-license.php")
+                    }
+                }
+                developers {
+                    developer {
+                        name.set("Concordant")
+                        email.set("support@concordant.io")
+                    }
+                }
+                scm {
+                    url.set("https://github.com/concordant/c-client")
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "Gitlab"
+            url = uri(
+                "https://gitlab.inria.fr/api/v4/projects/" +
+                    "${System.getenv("CI_PROJECT_ID")}/packages/maven"
+            )
+            credentials(HttpHeaderCredentials::class) {
+                name = "Job-Token"
+                value = System.getenv("CI_JOB_TOKEN")
+            }
+            authentication {
+                create<HttpHeaderAuthentication>("header")
+            }
+        }
+        maven {
+            name = "MavenCentral"
+            url = uri(
+                "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            )
+            credentials {
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_TOKEN")
+            }
+        }
+    }
+}
+
+signing {
+    sign(publishing.publications)
+}
+
 npmPublishing {
-    organization = group as String
+    // Maven uses reversed URLs as groupId, while NPM uses simple names
+    organization = "concordant"
     readme = file("README.md")
     repositories {
         repository("Gitlab") {
