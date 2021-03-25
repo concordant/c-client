@@ -13,7 +13,6 @@ To use it, you will need to authenticate to Gitlab, using either:
   https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
   with at least the `read_api` scope.
 
-
 ### Kotlin and Gradle
 
 To setup authentication, add the token to your gradle properties file
@@ -89,7 +88,7 @@ and to Javascript as a Node.js package.
 - pack the NPM package
 
 `gradle publish`:
-- publish the NPM package to the Gitlab Packages registry
+- publish the Maven and NPM packages
   (requires authentication ; better use it via CI pipelines).
 
 `gradle dokkaHtml`:
