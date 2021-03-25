@@ -1,5 +1,7 @@
 # Concordant Client Library
 
+[![](https://gitlab.inria.fr/concordant/software/c-client/badges/master/pipeline.svg)](
+https://gitlab.inria.fr/concordant/software/c-client/-/commits/master)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
 
 Concordant client library in Kotlin for the Concordant platform API.
@@ -14,9 +16,10 @@ for CRDTs type-specific usage.
 
 ## Getting started
 
-This library is delivered as an [NPM package](
+This library is delivered as both a [Maven package](
+https://search.maven.org/artifact/io.concordant/c-client)
+and an [NPM package](
 https://www.npmjs.com/package/@concordant/c-client).
-A Maven package will be available soon.
 
 Install the package:
 ``` shell
