@@ -29,7 +29,8 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.delay
 
 class CServiceAdapterTest : StringSpec({
-    "connect to c-service create, write twice, read and delete" {
+    // This test is disabled, as it currently fails on CI. See issue #37.
+    "!connect to c-service create, write twice, read and delete" {
         CServiceAdapter.delete("myapp", "http://127.0.0.1:4000")
         delay(300)
         CServiceAdapter.connect("myapp", "http://127.0.0.1:4000")
