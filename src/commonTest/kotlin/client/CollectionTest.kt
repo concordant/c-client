@@ -34,7 +34,7 @@ class CollectionTest : StringSpec({
     lateinit var session: Session
 
     beforeTest {
-        session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
+        session = Session.connect(dbname, svcUrl, svcCred)
     }
 
     afterTest {

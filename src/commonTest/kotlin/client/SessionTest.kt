@@ -27,6 +27,11 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 
+val svcUrl = "http://127.0.0.1:4000"
+val svcCred = "credentials"
+val dbname = "mydatabase"
+val dbname2 = "myapp"
+
 /**
  * Tests suite for Session class.
  */
@@ -34,16 +39,16 @@ class SessionTest : StringSpec({
 
     "opened session should be active session" {
         ActiveSession.shouldBeNull()
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
-        session.getDbName().shouldBe("mydatabase")
-        session.getServiceUrl().shouldBe("http://127.0.0.1:4000")
+        val session = Session.connect(dbname, svcUrl, svcCred)
+        session.getDbName().shouldBe(dbname)
+        session.getServiceUrl().shouldBe(svcUrl)
         ActiveSession.shouldBe(session)
         session.close()
         ActiveSession.shouldBeNull()
     }
 
     "use a closed session should fail" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
+        val session = Session.connect(dbname, svcUrl, svcCred)
         session.close()
         shouldThrow<RuntimeException> {
             session.openCollection("mycollection", true)
@@ -51,15 +56,15 @@ class SessionTest : StringSpec({
     }
 
     "open a second session should fail" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
+        val session = Session.connect(dbname, svcUrl, svcCred)
         shouldThrow<RuntimeException> {
-            Session.connect("mydatabase2", "http://127.0.0.1:4000", "credentials")
+            Session.connect("mydatabase2", svcUrl, svcCred)
         }
         session.close()
     }
-    
+
     "close is done in cascade from session" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
+        val session = Session.connect(dbname, svcUrl, svcCred)
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounter1", "PNCounter", false)
         session.close()
