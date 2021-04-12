@@ -20,12 +20,15 @@
 package client
 
 import client.utils.ActiveSession
+import client.utils.CObjectUId
 import client.utils.ConsistencyLevel
 import crdtlib.crdt.PNCounter
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.booleans.shouldBeTrue
 
 val svcUrl = "http://127.0.0.1:4000"
 val svcCred = "credentials"
@@ -61,6 +64,56 @@ class SessionTest : StringSpec({
             Session.connect("mydatabase2", svcUrl, svcCred)
         }
         session.close()
+    }
+
+    "retrieve object UId" {
+        val session = Session.connect(dbname, svcUrl, svcCred)
+        val collection = session.openCollection("mycollection", false)
+        val deltacrdt1 = collection.open("mycounter", "PNCounter", false)
+        val deltacrdt2 = collection.open("myregister", "MVRegister", true)
+        val unmanagedCrdt = PNCounter()
+
+        session.getObjectUId(deltacrdt1)
+            .shouldBe(CObjectUId("mycollection",
+                                 "PNCounter",
+                                 "mycounter"))
+        session.getObjectUId(deltacrdt2)
+            .shouldBe(CObjectUId("mycollection",
+                                 "MVRegister",
+                                 "myregister"))
+        shouldThrow<RuntimeException> {
+            session.getObjectUId(unmanagedCrdt)
+        }
+        session.close()
+
+        // A closed session does not manage any object.
+        shouldThrow<RuntimeException> {
+            session.getObjectUId(deltacrdt1)
+        }
+        shouldThrow<RuntimeException> {
+            session.getObjectUId(deltacrdt2)
+        }
+        shouldThrow<RuntimeException> {
+            session.getObjectUId(unmanagedCrdt)
+        }
+    }
+
+    "check if object is writable" {
+        val session = Session.connect(dbname, svcUrl, svcCred)
+        val collection = session.openCollection("mycollection", false)
+        val deltacrdt1 = collection.open("mycounter", "PNCounter", false)
+        val deltacrdt2 = collection.open("myregister", "MVRegister", true)
+        val unmanagedCrdt = PNCounter()
+
+        session.isWritable(deltacrdt1).shouldBeTrue()
+        session.isWritable(deltacrdt2).shouldBeFalse()
+        session.isWritable(unmanagedCrdt).shouldBeFalse()
+        session.close()
+
+        // A closed collection does not manage any object.
+        session.isWritable(deltacrdt1).shouldBeFalse()
+        session.isWritable(deltacrdt2).shouldBeFalse()
+        session.isWritable(unmanagedCrdt).shouldBeFalse()
     }
 
     "close is done in cascade from session" {
