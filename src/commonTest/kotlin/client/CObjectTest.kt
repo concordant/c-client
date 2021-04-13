@@ -32,7 +32,7 @@ import io.kotest.matchers.shouldBe
 class ObjectTest : StringSpec({
 
     "open read collection then open write object should fail" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
+        val session = Session.connect(dbname, svcUrl, svcCred)
         val collection = session.openCollection("mycollection", true)
         shouldThrow<RuntimeException> {
             collection.open("mycounter", "PNCounter", false)
@@ -41,7 +41,7 @@ class ObjectTest : StringSpec({
     }
 
     "open a transaction in a transaction should fail" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
+        val session = Session.connect(dbname, svcUrl, svcCred)
         shouldThrow<RuntimeException> {
             session.transaction(ConsistencyLevel.None) {
                 session.transaction(ConsistencyLevel.None) {
@@ -52,7 +52,7 @@ class ObjectTest : StringSpec({
     }
 
     "open an object within a transaction should fail" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
+        val session = Session.connect(dbname, svcUrl, svcCred)
         val collection = session.openCollection("mycollection", true)
         shouldThrow<RuntimeException> {
             session.transaction(ConsistencyLevel.None) {
@@ -63,7 +63,7 @@ class ObjectTest : StringSpec({
     }
 
     "operation on an object outside a transaction should fail" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
+        val session = Session.connect(dbname, svcUrl, svcCred)
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounter", "PNCounter", false)
         shouldThrow<RuntimeException> {
@@ -80,7 +80,7 @@ class ObjectTest : StringSpec({
     }
 
     "update a read-only object should fail" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
+        val session = Session.connect(dbname, svcUrl, svcCred)
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounter", "PNCounter", true)
         var value = 1
@@ -104,7 +104,7 @@ class ObjectTest : StringSpec({
     // instead of a new copy.
     // This test will need to be updated as soon as it is done.
     "open two times an object should work" {
-        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
+        val session = Session.connect(dbname, svcUrl, svcCred)
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounterwork", "PNCounter", false)
         var value1 = 1
@@ -134,7 +134,7 @@ class ObjectTest : StringSpec({
     }
 
 //    "use a closed object should fail" {
-//        val session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
+//        val session = Session.connect(dbname, svcUrl, svcCred)
 //        val collection = session.openCollection("mycollection", false)
 //        val deltacrdt = collection.open("mycounter", "PNCounter", false)
 //        deltacrdt.close()

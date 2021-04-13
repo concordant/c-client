@@ -7,11 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [Unreleased]
   - Added
-    - Add more unit tests
-    - Add status file
   - Changed
-    - UUIds are hexadecimal
   - Deprecated
   - Removed
   - Fixed
   - Security
+
+- [1.1.6] - 2021-03-25
+  - Added
+    - Add more unit tests
+    - Add status file
+  - Changed
+    - UUIds are hexadecimal
