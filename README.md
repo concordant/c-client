@@ -14,6 +14,8 @@ and [its documentation](
 https://concordant.gitlabpages.inria.fr/software/c-crdtlib/c-crdtlib/)
 for CRDTs type-specific usage.
 
+The main repository is in [the Inria gitlab](https://gitlab.inria.fr/concordant/software/c-client/) (this is where you can post tickets.  There is an identical clone in  [GitHub](https://github.com/concordant/c-client) (tickets here might be ignored).
+
 ## Getting started
 
 This library is delivered as both a [Maven package](

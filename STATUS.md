@@ -21,9 +21,9 @@ Eventually, we expect to add the option of stronger guarantees when required by 
 
 ## The Concordant design and API
 
-We have a [tutorial](https://concordant.io/getting-started) that illustrates how to develop an application using the C-Client API.  The design and API is documented in the [C-Client README](https://github.com/concordant/c-client/blob/master/README.md). Let‘s summarise briefly.
+We have a [tutorial](https://concordant.io/getting-started) that illustrates how to develop an application using the c-client API.  The design and API is documented in the [c-client README](https://gitlab.inria.fr/concordant/software/c-client/-/blob/master/README.md). Let‘s summarise briefly.
 
-A Concordant database consists of a set of *collections*, each containing any number of CRDT *objects*. The supported object types are those in our [C-CRDTLib](https://github.com/concordant/c-crdtlib).  (You are free to use other kinds of objects in your code, but they cannot be stored in a collection.).
+A Concordant database consists of a set of *collections*, each containing any number of CRDT *objects*. The supported object types are those in our [c-CRDTlib](https://gitlab.inria.fr/concordant/software/c-crdtlib).  (You are free to use other kinds of objects in your code, but they cannot be stored in a collection.).
 
 An application starts by connecting through a *session*.  To access an object, open its collection, then open the object in the collection.  (Remember to close them when done.)
 
