@@ -19,6 +19,7 @@
 
 package client.utils
 
+import crdtlib.crdt.DeltaCRDT
 import client.Session
 import client.Transaction
 
@@ -31,3 +32,5 @@ var ActiveSession: Session? = null
 * Global variable storing a reference to the currently active transaction.
 */
 var ActiveTransaction: Transaction? = null
+
+val ActiveGets: MutableMap<DeltaCRDT, Int> = mutableMapOf()

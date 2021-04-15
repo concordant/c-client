@@ -19,6 +19,7 @@
 
 package client.utils
 
+import client.utils.ActiveGets
 import crdtlib.crdt.DeltaCRDT
 import crdtlib.utils.Environment
 import io.ktor.client.HttpClient
@@ -58,22 +59,45 @@ class CServiceAdapter {
          * @param objectUId crdt id
          * @param target the delta crdt in which distant value should be merged
          */
-        fun getObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, target: DeltaCRDT){
-            GlobalScope.launch {
-                val client = HttpClient()
-                var crdtJson = client.post<String>{
-                    url("$serviceUrl/api/get-object")
-                    contentType(ContentType.Application.Json)
-                    body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}"}"""
+        fun getObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, target: DeltaCRDT) {
+            when (ActiveGets.getOrElse(target){0}) {
+                0 -> ActiveGets[target] = 1
+                1 -> {
+                    ActiveGets[target] = 2
+                    return
                 }
-                client.close()
-                crdtJson = crdtJson.removePrefix("\"").removeSuffix("\"")
-                crdtJson = crdtJson.replace("\\\\\\\"", "\\\\\""); // replace \\\" with \\"
-                crdtJson = crdtJson.replace("\\\\'", "'"); // replace \\' with '
-                crdtJson = crdtJson.replace("\\\\n", "\\n"); // replace \\n with \n
-                crdtJson = crdtJson.replace("\\\\\\", "\\\\"); // replace \\\ with \\
-                crdtJson = crdtJson.replace("\\\"", "\""); // replace \" with "
-                target.merge(DeltaCRDT.fromJson(crdtJson));
+                else -> return
+            }
+
+            GlobalScope.launch {
+                while (ActiveGets.getOrElse(target){0} > 0) {
+                    val client = HttpClient()
+                    try {
+                        var crdtJson = client.post<String>{
+                            url("$serviceUrl/api/get-object")
+                            contentType(ContentType.Application.Json)
+                            body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}"}"""
+                        }
+                        crdtJson = crdtJson.removePrefix("\"").removeSuffix("\"")
+                        crdtJson = crdtJson.replace("\\\\\\\"", "\\\\\""); // replace \\\" with \\"
+                        crdtJson = crdtJson.replace("\\\\'", "'"); // replace \\' with '
+                        crdtJson = crdtJson.replace("\\\\n", "\\n"); // replace \\n with \n
+                        crdtJson = crdtJson.replace("\\\\\\", "\\\\"); // replace \\\ with \\
+                        crdtJson = crdtJson.replace("\\\"", "\""); // replace \" with "
+                        target.merge(DeltaCRDT.fromJson(crdtJson));
+
+                        delay(3000L)
+                        when (ActiveGets[target]) {
+                            1 -> ActiveGets[target] = 0
+                            2 -> ActiveGets[target] = 1
+                            else -> throw IllegalArgumentException("Invalid value")
+                        }
+                    } catch (e: Exception) {
+                        delay(1000L)
+                    } finally {
+                        client.close()
+                    }
+                }
             }
         }
 
@@ -104,7 +128,7 @@ class CServiceAdapter {
          * Close the connection to the database
          * @param dbName database name
          */
-        fun close(dbName: String, serviceUrl: String){
+        fun close(dbName: String, serviceUrl: String) {
         }
 
         /**
