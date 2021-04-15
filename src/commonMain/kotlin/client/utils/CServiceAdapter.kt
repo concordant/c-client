@@ -107,20 +107,30 @@ class CServiceAdapter {
          * @param objectUId CRDT id
          * @param crdt new crdt
          */
-        fun updateObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, crdt: DeltaCRDT){
+        fun updateObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, crdt: DeltaCRDT) {
             GlobalScope.launch {
-                val client = HttpClient()
-                var crdtJson = crdt.toJson().replace("\\\\", "\\\\\\"); // replace \\ with \\\
-                crdtJson = crdtJson.replace("\\\"", "\\\\\""); // replace \" with \\"
-                crdtJson = crdtJson.replace("'", "\\\\'"); // replace ' with \\'
-                crdtJson = crdtJson.replace("\\n", "\\\\n"); // replace \n with \\n
-                crdtJson = crdtJson.replace("\"", "\\\""); // replace " with \"
-                client.post<String>{
-                    url("$serviceUrl/api/update-object")
-                    contentType(ContentType.Application.Json)
-                    body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}", "document":"$crdtJson"}"""
+                while (true) {
+                    val client = HttpClient()
+                    try {
+                        var crdtJson = crdt.toJson().replace("\\\\", "\\\\\\"); // replace \\ with \\\
+                        crdtJson = crdtJson.replace("\\\"", "\\\\\""); // replace \" with \\"
+                        crdtJson = crdtJson.replace("'", "\\\\'"); // replace ' with \\'
+                        crdtJson = crdtJson.replace("\\n", "\\\\n"); // replace \n with \\n
+                        crdtJson = crdtJson.replace("\"", "\\\""); // replace " with \"
+                        client.post<String> {
+                            url("$serviceUrl/api/update-object")
+                            contentType(ContentType.Application.Json)
+                            body = """{"appName":"$dbName","id":"${
+                                Json.encodeToString(objectUId).replace("\"", "\\\"")
+                            }", "document":"$crdtJson"}"""
+                        }
+                        break
+                    } catch (e: Exception) {
+                        delay(1000L)
+                    } finally {
+                        client.close()
+                    }
                 }
-                client.close()
             }
         }
 
