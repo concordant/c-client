@@ -19,8 +19,10 @@
 
 package client
 
+import crdtlib.crdt.DeltaCRDT
 import client.utils.ActiveSession
 import client.utils.ActiveTransaction
+import client.utils.CObjectUId
 import client.utils.CServiceAdapter
 import client.utils.CollectionUId
 import client.utils.ConsistencyLevel
@@ -130,6 +132,26 @@ class Session {
     }
 
     /**
+     * Get the [CObjectUID] of [obj]
+     *
+     * @throws RuntimeException if object is not a DeltaCRDT
+     *     managed in this session
+     */
+    internal fun getObjectUId(obj: DeltaCRDT): CObjectUId {
+        return openedCollections.values.elementAtOrNull(0)
+            ?.getObjectUId(obj) ?: throw RuntimeException(
+                "obj is not a managed DeltaCRDT")
+    }
+
+    /**
+     * Check if [obj] is open and writable
+     */
+    internal fun isWritable(obj: DeltaCRDT): Boolean {
+        return openedCollections.values.elementAtOrNull(0)
+            ?.isWritable(obj) == true
+    }
+
+    /**
      * Creates a transaction.
      * @param type the desired consistency level.
      * @param body the transaction body function.
@@ -138,7 +160,7 @@ class Session {
     fun transaction(type: ConsistencyLevel, body: TransactionBody): Transaction {
         if (ActiveTransaction != null) throw RuntimeException("A transaction is already opened.")
 
-        val transaction = Transaction(body)
+        val transaction = Transaction(this, body)
         ActiveTransaction = transaction
         transaction.launch()
         return transaction

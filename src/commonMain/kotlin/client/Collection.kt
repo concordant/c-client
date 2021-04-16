@@ -101,4 +101,18 @@ class Collection {
 
         this.attachedSession.notifyClosedCollection(this.id)
     }
+
+    /**
+     * Get the [CObjectUID] of [obj] or null if not managed by this collection
+     */
+    internal fun getObjectUId(obj: DeltaCRDT): CObjectUId? {
+        return openedObjects[obj]?.first
+    }
+
+    /**
+     * Check if [obj] is open and writable
+     */
+    internal fun isWritable(obj: DeltaCRDT): Boolean {
+        return openedObjects[obj]?.second == false
+    }
 }

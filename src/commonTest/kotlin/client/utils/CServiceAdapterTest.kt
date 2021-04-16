@@ -19,6 +19,8 @@
 
 package client.utils
 
+import client.svcUrl
+import client.dbname2
 import crdtlib.crdt.DeltaCRDT
 import crdtlib.crdt.DeltaCRDTFactory
 import crdtlib.crdt.PNCounter
@@ -31,9 +33,9 @@ import kotlinx.coroutines.delay
 class CServiceAdapterTest : StringSpec({
     // This test is disabled, as it currently fails on CI. See issue #37.
     "!connect to c-service create, write twice, read and delete" {
-        CServiceAdapter.delete("myapp", "http://127.0.0.1:4000")
+        CServiceAdapter.delete(dbname2, svcUrl)
         delay(300)
-        CServiceAdapter.connect("myapp", "http://127.0.0.1:4000")
+        CServiceAdapter.connect(dbname2, svcUrl)
         delay(300)
 
         val uid = ClientUId("clientid")
@@ -42,24 +44,24 @@ class CServiceAdapterTest : StringSpec({
         val objectUId = CObjectUId("myCollection", "PNCounter", "myPNCounter")
 
         val my_crdt : DeltaCRDT = DeltaCRDTFactory.createDeltaCRDT("PNCounter", my_env)
-        CServiceAdapter.getObject("myapp", "http://127.0.0.1:4000", objectUId, my_crdt)
+        CServiceAdapter.getObject(dbname2, svcUrl, objectUId, my_crdt)
         delay(300)
         my_crdt.toJson().shouldBe("{\"type\":\"PNCounter\",\"metadata\":{\"increment\":[],\"decrement\":[]},\"value\":0}")
 
         if (my_crdt is PNCounter) {
             my_crdt.increment(10)
-            CServiceAdapter.updateObject("myapp", "http://127.0.0.1:4000", objectUId, my_crdt)
+            CServiceAdapter.updateObject(dbname2, svcUrl, objectUId, my_crdt)
             my_crdt.decrement(5)
-            CServiceAdapter.updateObject("myapp", "http://127.0.0.1:4000", objectUId, my_crdt)
+            CServiceAdapter.updateObject(dbname2, svcUrl, objectUId, my_crdt)
             delay(300)
 
             val my_crdt2 : DeltaCRDT = DeltaCRDTFactory.createDeltaCRDT("PNCounter", my_env)
-            CServiceAdapter.getObject("myapp", "http://127.0.0.1:4000", objectUId, my_crdt2)
+            CServiceAdapter.getObject(dbname2, svcUrl, objectUId, my_crdt2)
             delay(300)
             val text = "{\"type\":\"PNCounter\",\"metadata\":{\"increment\":[{\"name\":\"clientid\"},{\"first\":10,\"second\":{\"uid\":{\"name\":\"clientid\"},\"cnt\":-2147483647}}],\"decrement\":[{\"name\":\"clientid\"},{\"first\":5,\"second\":{\"uid\":{\"name\":\"clientid\"},\"cnt\":-2147483646}}]},\"value\":5}"
             my_crdt2.toJson().shouldBe(text)
         }
 
-        CServiceAdapter.close("myapp", "http://127.0.0.1:4000")
+        CServiceAdapter.close(dbname2, svcUrl)
     }
 })

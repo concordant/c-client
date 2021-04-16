@@ -19,12 +19,15 @@
 
 package client
 
+import client.utils.CObjectUId
 import client.utils.ConsistencyLevel
 import crdtlib.crdt.PNCounter
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.booleans.shouldBeTrue
 
 /**
  * Tests suite for Collection class.
@@ -34,7 +37,7 @@ class CollectionTest : StringSpec({
     lateinit var session: Session
 
     beforeTest {
-        session = Session.connect("mydatabase", "http://127.0.0.1:4000", "credentials")
+        session = Session.connect(dbname, svcUrl, svcCred)
     }
 
     afterTest {
@@ -75,5 +78,45 @@ class CollectionTest : StringSpec({
                 }
             }
         }
+    }
+
+    "retrieve object UId" {
+        val collection = session.openCollection("mycollection", false)
+        val deltacrdt1 = collection.open("mycounter", "PNCounter", false)
+        val deltacrdt2 = collection.open("myregister", "MVRegister", true)
+        val unmanagedCrdt = PNCounter()
+
+        collection.getObjectUId(deltacrdt1)
+            .shouldBe(CObjectUId("mycollection",
+                                 "PNCounter",
+                                 "mycounter"))
+        collection.getObjectUId(deltacrdt2)
+            .shouldBe(CObjectUId("mycollection",
+                                 "MVRegister",
+                                 "myregister"))
+        collection.getObjectUId(unmanagedCrdt).shouldBe(null)
+        collection.close()
+
+        // A closed collection does not manage any object.
+        collection.getObjectUId(deltacrdt1).shouldBe(null)
+        collection.getObjectUId(deltacrdt2).shouldBe(null)
+        collection.getObjectUId(unmanagedCrdt).shouldBe(null)
+    }
+
+    "check if object is writable" {
+        val collection = session.openCollection("mycollection", false)
+        val deltacrdt1 = collection.open("mycounter", "PNCounter", false)
+        val deltacrdt2 = collection.open("myregister", "MVRegister", true)
+        val unmanagedCrdt = PNCounter()
+
+        collection.isWritable(deltacrdt1).shouldBeTrue()
+        collection.isWritable(deltacrdt2).shouldBeFalse()
+        collection.isWritable(unmanagedCrdt).shouldBeFalse()
+        collection.close()
+
+        // A closed collection does not manage any object.
+        collection.isWritable(deltacrdt1).shouldBeFalse()
+        collection.isWritable(deltacrdt2).shouldBeFalse()
+        collection.isWritable(unmanagedCrdt).shouldBeFalse()
     }
 })
