@@ -1,6 +1,6 @@
 # Status of the Concordant platform, and development directions
 
-16 March 2021
+16 April 2021
 
 ## The Concordant vision
 
@@ -23,7 +23,7 @@ Eventually, we expect to add the option of stronger guarantees when required by 
 
 We have a [tutorial](https://concordant.io/getting-started) that illustrates how to develop an application using the c-client API.  The design and API is documented in the [c-client README](https://gitlab.inria.fr/concordant/software/c-client/-/blob/master/README.md). Let‘s summarise briefly.
 
-A Concordant database consists of a set of *collections*, each containing any number of CRDT *objects*. The supported object types are those in our [c-CRDTlib](https://gitlab.inria.fr/concordant/software/c-crdtlib).  (You are free to use other kinds of objects in your code, but they cannot be stored in a collection.).
+A Concordant database consists of a set of *collections*, each containing any number of CRDT *objects*. The supported object types are those in our [c-CRDTlib](https://gitlab.inria.fr/concordant/software/c-crdtlib).  (You are free to use other kinds of objects in your code, but they cannot be stored in a collection).
 
 An application starts by connecting through a *session*.  To access an object, open its collection, then open the object in the collection.  (Remember to close them when done.)
 
@@ -49,14 +49,14 @@ The main limitations are as follows:
 - Data is stored on a server, running on a designated device. If this device is not reachable, then the application will be non-responsive. Disconnected operation is *not* supported.
 - Notifications are not implemented. The application must poll to receive remote updates.
 - The object interface is ad-hoc and does not conform to developers’ expectations.
-- Performance is poor, in particular because we do not leverage the delta capability and because of polling. This is particularly apparent in the C-Markdown-Editor application.
+- Performance is poor, in particular because a transaction gets and puts a full copy of an object (i.e., we do not currently leverage the delta capability of the c-CRDT library) and because of polling. This is particularly apparent in the C-Markdown-Editor application.
 - There is no security layer.
 
 ## Short-term evolution
 
 We plan a new releases, fixing the most egregious issues, as follows:
 
-- Provide an on-device object cache, backed up by a Service Worker with PouchDB.  This will enable atomic transactions and disconnected operation.
+- Provide an on-device object cache, and move the c-client into a Service Worker, backed up in PouchDB.  This will enable the use of deltas, and provide stronger guarantees such as atomic transactions and disconnected operation.
 - Provide basic user authentication and security.
 - Fix the interface of CRDT objects, to conform to the corresponding Kotlin/TypeScript standard types.
 - Provide notifications.
