@@ -76,7 +76,7 @@ kotlin {
 
         commonMain {
             dependencies {
-                implementation("io.concordant:c-crdtlib:1.+")
+                implementation("io.concordant:c-crdtlib:[1.0,2.0)")
                 implementation("io.ktor:ktor-client-core:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
             }
