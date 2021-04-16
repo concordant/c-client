@@ -19,7 +19,6 @@
 
 package client.utils
 
-import client.utils.ActiveGets
 import crdtlib.crdt.DeltaCRDT
 import crdtlib.utils.Environment
 import io.ktor.client.HttpClient
@@ -37,6 +36,8 @@ import kotlinx.serialization.json.Json
  */
 class CServiceAdapter {
     companion object {
+        private val ActiveGets: MutableMap<DeltaCRDT, Int> = mutableMapOf()
+
         /**
          * Connection to the database
          * @param dbName database name
