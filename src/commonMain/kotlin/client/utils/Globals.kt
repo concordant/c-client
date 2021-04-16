@@ -19,6 +19,7 @@
 
 package client.utils
 
+import crdtlib.crdt.DeltaCRDT
 import client.Session
 import client.Transaction
 
