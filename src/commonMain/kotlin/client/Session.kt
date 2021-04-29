@@ -82,6 +82,7 @@ class Session {
      * Pull remote updates into the current session
      * @param type is the consistency level of the operation
      */
+    @Name("pull")
     fun pull(type: ConsistencyLevel) {
         val collection = this.openedCollections.values.elementAtOrNull(0)
             ?: throw RuntimeException("There is no opened collection.")
