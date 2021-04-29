@@ -52,7 +52,7 @@ class ClientEnvironment(val session: Session, uid: ClientUId) : SimpleEnvironmen
         val objectUId = infos.first
 
         // Get distant version of the object
-        CServiceAdapter.getObject(session.getDbName(), session.getServiceUrl(), objectUId, obj)
+        CServiceAdapter.getObject(session.getDbName(), session.getServiceUrl(), objectUId, obj, collection)
     }
 
     /**

@@ -78,10 +78,18 @@ class Session {
         this.environment = ClientEnvironment(this, this.clientUId)
     }
 
-    // c_pull_XX_view
+    /**
+     * Pull remote updates into the current session
+     * @param type is the consistency level of the operation
+     */
     fun pull(type: ConsistencyLevel) {
-        // Not yet implemented
-        throw RuntimeException("Method pull is not yet supported.")
+        val collection = this.openedCollections.values.elementAtOrNull(0)
+            ?: throw RuntimeException("There is no opened collection.")
+
+        for ((k, v) in collection.waitingPull) {
+            k.merge(v)
+        }
+        collection.waitingPull.clear()
     }
 
     // c_pull_XX_view(v)

@@ -59,6 +59,11 @@ class Collection {
     internal val openedObjects: MutableMap<DeltaCRDT, Pair<CObjectUId, Boolean>> = mutableMapOf()
 
     /**
+     * Remote updates ready to be pulled
+     */
+    internal val waitingPull: MutableMap<DeltaCRDT, DeltaCRDT> = mutableMapOf()
+
+    /**
      * Default constructor.
      * @param attachedSession the session from which this collection depends.
      * @param id the collection unique identifier.
@@ -85,7 +90,7 @@ class Collection {
         val objectUId = CObjectUId(this.id, type, objectId)
 
         val obj : DeltaCRDT = DeltaCRDTFactory.createDeltaCRDT(type, this.attachedSession.environment)
-        CServiceAdapter.getObject(this.attachedSession.getDbName(), this.attachedSession.getServiceUrl(), objectUId, obj)
+        CServiceAdapter.getObject(this.attachedSession.getDbName(), this.attachedSession.getServiceUrl(), objectUId, obj, this)
         this.openedObjects[obj] = Pair(objectUId, readOnly)
         return obj
     }
