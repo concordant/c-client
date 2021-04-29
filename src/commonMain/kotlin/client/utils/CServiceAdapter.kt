@@ -19,6 +19,7 @@
 
 package client.utils
 
+import client.Collection
 import crdtlib.crdt.DeltaCRDT
 import crdtlib.utils.Environment
 import io.ktor.client.HttpClient
@@ -60,7 +61,7 @@ class CServiceAdapter {
          * @param objectUId crdt id
          * @param target the delta crdt in which distant value should be merged
          */
-        fun getObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, target: DeltaCRDT) {
+        fun getObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, target: DeltaCRDT, collection: Collection) {
             when (ActiveGets.getOrElse(target){0}) {
                 0 -> ActiveGets[target] = 1
                 1 -> {
@@ -85,7 +86,7 @@ class CServiceAdapter {
                         crdtJson = crdtJson.replace("\\\\n", "\\n"); // replace \\n with \n
                         crdtJson = crdtJson.replace("\\\\\\", "\\\\"); // replace \\\ with \\
                         crdtJson = crdtJson.replace("\\\"", "\""); // replace \" with "
-                        target.merge(DeltaCRDT.fromJson(crdtJson));
+                        collection.waitingPull[target] = DeltaCRDT.fromJson(crdtJson)
 
                         delay(3000L)
                         when (ActiveGets[target]) {
