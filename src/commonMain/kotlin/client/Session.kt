@@ -30,7 +30,6 @@ import client.utils.Name
 import client.utils.TransactionBody
 import client.utils.generateUUId4
 import crdtlib.utils.ClientUId
-import crdtlib.utils.VersionVector
 
 /**
 * Class representing a client session.
@@ -76,27 +75,6 @@ class Session {
         this.serviceUrl = serviceUrl
         this.clientUId = clientUId
         this.environment = ClientEnvironment(this, this.clientUId)
-    }
-
-    /**
-     * Pull remote updates into the current session
-     * @param type is the consistency level of the operation
-     */
-    @Name("pull")
-    fun pull(type: ConsistencyLevel) {
-        val collection = this.openedCollections.values.elementAtOrNull(0)
-            ?: throw RuntimeException("There is no opened collection.")
-
-        for ((k, v) in collection.waitingPull) {
-            k.merge(v)
-        }
-        collection.waitingPull.clear()
-    }
-
-    // c_pull_XX_view(v)
-    fun pull(type: ConsistencyLevel, vv: VersionVector) {
-        // Not yet implemented
-        throw RuntimeException("Method pull is not yet supported.")
     }
 
     /**
