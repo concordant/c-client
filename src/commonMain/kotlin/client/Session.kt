@@ -30,7 +30,6 @@ import client.utils.Name
 import client.utils.TransactionBody
 import client.utils.generateUUId4
 import crdtlib.utils.ClientUId
-import crdtlib.utils.VersionVector
 
 /**
 * Class representing a client session.
@@ -76,18 +75,6 @@ class Session {
         this.serviceUrl = serviceUrl
         this.clientUId = clientUId
         this.environment = ClientEnvironment(this, this.clientUId)
-    }
-
-    // c_pull_XX_view
-    fun pull(type: ConsistencyLevel) {
-        // Not yet implemented
-        throw RuntimeException("Method pull is not yet supported.")
-    }
-
-    // c_pull_XX_view(v)
-    fun pull(type: ConsistencyLevel, vv: VersionVector) {
-        // Not yet implemented
-        throw RuntimeException("Method pull is not yet supported.")
     }
 
     /**

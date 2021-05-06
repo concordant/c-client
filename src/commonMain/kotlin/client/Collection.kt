@@ -24,9 +24,11 @@ import client.utils.CObjectUId
 import client.utils.CollectionUId
 import client.utils.NotificationHandler
 import client.utils.Name
+import client.utils.ConsistencyLevel
 import client.utils.CServiceAdapter
 import crdtlib.crdt.DeltaCRDT
 import crdtlib.crdt.DeltaCRDTFactory
+import crdtlib.utils.VersionVector
 
 /**
 * This class represents a collection of objects.
@@ -59,6 +61,11 @@ class Collection {
     internal val openedObjects: MutableMap<DeltaCRDT, Pair<CObjectUId, Boolean>> = mutableMapOf()
 
     /**
+     * Remote updates ready to be pulled
+     */
+    internal val waitingPull: MutableMap<DeltaCRDT, DeltaCRDT> = mutableMapOf()
+
+    /**
      * Default constructor.
      * @param attachedSession the session from which this collection depends.
      * @param id the collection unique identifier.
@@ -68,6 +75,24 @@ class Collection {
         this.attachedSession = attachedSession
         this.id = id
         this.readOnly = readOnly
+    }
+
+    /**
+     * Pull remote updates into the current session
+     * @param type is the consistency level of the operation
+     */
+    @Name("pull")
+    fun pull(type: ConsistencyLevel) {
+        for ((k, v) in this.waitingPull) {
+            k.merge(v)
+        }
+        this.waitingPull.clear()
+    }
+
+    // c_pull_XX_view(v)
+    fun pull(type: ConsistencyLevel, vv: VersionVector) {
+        // Not yet implemented
+        throw RuntimeException("Method pull is not yet supported.")
     }
 
     /**
@@ -85,7 +110,7 @@ class Collection {
         val objectUId = CObjectUId(this.id, type, objectId)
 
         val obj : DeltaCRDT = DeltaCRDTFactory.createDeltaCRDT(type, this.attachedSession.environment)
-        CServiceAdapter.getObject(this.attachedSession.getDbName(), this.attachedSession.getServiceUrl(), objectUId, obj)
+        CServiceAdapter.getObject(this.attachedSession.getDbName(), this.attachedSession.getServiceUrl(), objectUId, obj, this)
         this.openedObjects[obj] = Pair(objectUId, readOnly)
         return obj
     }
