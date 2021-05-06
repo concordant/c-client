@@ -6,12 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [Unreleased]
   - Added
-    - Add pull method in Collection
   - Changed
   - Deprecated
   - Removed
   - Fixed
   - Security
+
+- [1.2.0] - 2021-05-06
+  - Added
+    - Add pull method in Collection
 
 - [1.1.7] - 2021-04-16
   - Changed
