@@ -23,6 +23,7 @@ import kotlinx.browser.window
 
 
 internal val serviceWorkerURL = "c-service-worker.js"
+internal var isActive = false
 
 /**
  * Is service worker feature available?
@@ -39,7 +40,9 @@ actual fun isServiceWorkerAvailable(): Boolean {
  */
 actual fun registerServiceWorker() {
     if (isServiceWorkerAvailable()) {
-        window.navigator.serviceWorker.register(serviceWorkerURL)
+        window.navigator.serviceWorker.register(serviceWorkerURL).then {
+            registration -> isActive = true
+        }
     }
 }
 
@@ -48,8 +51,5 @@ actual fun registerServiceWorker() {
  * @return true if service worker is registered, otherwise false.
  */
 actual fun isServiceWorkerActive(): Boolean {
-    if (isServiceWorkerAvailable()) {
-        return js("window.navigator.serviceWorker.controller !== null")
-    }
-    return false
+    return isActive
 }
