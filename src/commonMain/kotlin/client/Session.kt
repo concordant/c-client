@@ -19,7 +19,6 @@
 
 package client
 
-import crdtlib.crdt.DeltaCRDT
 import client.utils.ActiveSession
 import client.utils.ActiveTransaction
 import client.utils.CObjectUId
@@ -29,6 +28,7 @@ import client.utils.ConsistencyLevel
 import client.utils.Name
 import client.utils.TransactionBody
 import client.utils.generateUUId4
+import crdtlib.crdt.DeltaCRDT
 import crdtlib.utils.ClientUId
 
 /**
