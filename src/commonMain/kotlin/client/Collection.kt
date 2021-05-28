@@ -56,14 +56,19 @@ class Collection {
     private var isClosed: Boolean = false
 
     /**
-     * The objects opened within this collection.
+     * Contains all objects (opened or not) within this collection indexed by ID.
      */
-    internal val openedObjects: MutableMap<DeltaCRDT, Pair<CObjectUId, Boolean>> = mutableMapOf()
+    internal val objectsById: MutableMap<CObjectUId, DeltaCRDT> = mutableMapOf()
+
+    /**
+     * The objects opened within this collection indexed by reference.
+     */
+    internal val openedObjectsByRef: MutableMap<DeltaCRDT, Pair<CObjectUId, Boolean>> = mutableMapOf()
 
     /**
      * Remote updates ready to be pulled
      */
-    internal val waitingPull: MutableMap<DeltaCRDT, DeltaCRDT> = mutableMapOf()
+    internal val waitingPull: MutableMap<CObjectUId, DeltaCRDT> = mutableMapOf()
 
     /**
      * Default constructor.
@@ -84,9 +89,14 @@ class Collection {
     @Name("pull")
     fun pull(type: ConsistencyLevel) {
         for ((k, v) in this.waitingPull) {
-            k.merge(v)
+            val crdt = this.getObject(k)
+            if (crdt != null) {
+                crdt.merge(v)
+            } else {
+                this.objectsById[k] = v
+            }
+            this.waitingPull.remove(k)
         }
-        this.waitingPull.clear()
     }
 
     // c_pull_XX_view(v)
@@ -98,6 +108,7 @@ class Collection {
     /**
      * Opens an object of the collection.
      * @param objectId the name of the object.
+     * @param type type of the object.
      * @param readOnly is the object open in read-only mode.
      * @param handler currently not used.
      */
@@ -109,9 +120,19 @@ class Collection {
 
         val objectUId = CObjectUId(this.id, type, objectId)
 
-        val obj : DeltaCRDT = DeltaCRDTFactory.createDeltaCRDT(type, this.attachedSession.environment)
-        CServiceAdapter.getObject(this.attachedSession.getDbName(), this.attachedSession.getServiceUrl(), objectUId, obj, this)
-        this.openedObjects[obj] = Pair(objectUId, readOnly)
+        var obj : DeltaCRDT? = this.getObject(objectUId)
+
+        if (obj !== null) {
+            if (this.getObjectUId(obj) === null) {
+                this.openedObjectsByRef[obj] = Pair(objectUId, readOnly)
+            }
+            return obj
+        }
+
+        obj = DeltaCRDTFactory.createDeltaCRDT(type, this.attachedSession.environment)
+        CServiceAdapter.getObject(this.attachedSession.getDbName(), this.attachedSession.getServiceUrl(), objectUId, this)
+        this.objectsById[objectUId] = obj
+        this.openedObjectsByRef[obj] = Pair(objectUId, readOnly)
         return obj
     }
 
@@ -120,7 +141,8 @@ class Collection {
      */
     @Name("close")
     fun close() {
-        this.openedObjects.clear()
+        this.objectsById.clear()
+        this.openedObjectsByRef.clear()
 
         this.isClosed = true
 
@@ -128,16 +150,23 @@ class Collection {
     }
 
     /**
+     * Get the [obj] of [CObjectUID] or null if not managed by this collection
+     */
+    internal fun getObject(objectUId: CObjectUId): DeltaCRDT? {
+        return this.objectsById[objectUId]
+    }
+
+    /**
      * Get the [CObjectUID] of [obj] or null if not managed by this collection
      */
     internal fun getObjectUId(obj: DeltaCRDT): CObjectUId? {
-        return openedObjects[obj]?.first
+        return this.openedObjectsByRef[obj]?.first
     }
 
     /**
      * Check if [obj] is open and writable
      */
     internal fun isWritable(obj: DeltaCRDT): Boolean {
-        return openedObjects[obj]?.second == false
+        return this.openedObjectsByRef[obj]?.second == false
     }
 }
