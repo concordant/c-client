@@ -56,9 +56,14 @@ class Collection {
     private var isClosed: Boolean = false
 
     /**
-     * The objects opened within this collection.
+     * The objects opened within this collection indexed by ID.
      */
-    internal val openedObjects: MutableMap<DeltaCRDT, Pair<CObjectUId, Boolean>> = mutableMapOf()
+    internal val openedObjectsById: MutableMap<CObjectUId, Pair<DeltaCRDT, Boolean>> = mutableMapOf()
+
+    /**
+     * The objects opened within this collection indexed by reference.
+     */
+    internal val openedObjectsByRef: MutableMap<DeltaCRDT, Pair<CObjectUId, Boolean>> = mutableMapOf()
 
     /**
      * Remote updates ready to be pulled
@@ -109,9 +114,16 @@ class Collection {
 
         val objectUId = CObjectUId(this.id, type, objectId)
 
-        val obj : DeltaCRDT = DeltaCRDTFactory.createDeltaCRDT(type, this.attachedSession.environment)
+        var obj : DeltaCRDT? = this.getObject(objectUId)
+
+        if (obj !== null) {
+            return obj
+        }
+
+        obj = DeltaCRDTFactory.createDeltaCRDT(type, this.attachedSession.environment)
         CServiceAdapter.getObject(this.attachedSession.getDbName(), this.attachedSession.getServiceUrl(), objectUId, obj, this)
-        this.openedObjects[obj] = Pair(objectUId, readOnly)
+        this.openedObjectsById[objectUId] = Pair(obj, readOnly)
+        this.openedObjectsByRef[obj] = Pair(objectUId, readOnly)
         return obj
     }
 
@@ -120,7 +132,8 @@ class Collection {
      */
     @Name("close")
     fun close() {
-        this.openedObjects.clear()
+        this.openedObjectsById.clear()
+        this.openedObjectsByRef.clear()
 
         this.isClosed = true
 
@@ -128,16 +141,30 @@ class Collection {
     }
 
     /**
+     * Get the [obj] of [CObjectUID] or null if not managed by this collection
+     */
+    internal fun getObject(objectUId: CObjectUId): DeltaCRDT? {
+        return openedObjectsById[objectUId]?.first
+    }
+
+    /**
      * Get the [CObjectUID] of [obj] or null if not managed by this collection
      */
     internal fun getObjectUId(obj: DeltaCRDT): CObjectUId? {
-        return openedObjects[obj]?.first
+        return openedObjectsByRef[obj]?.first
+    }
+
+    /**
+     * Check if the obj of [objectUId] is open and writable
+     */
+    internal fun isWritable(objectUId: CObjectUId): Boolean {
+        return openedObjectsById[objectUId]?.second == false
     }
 
     /**
      * Check if [obj] is open and writable
      */
     internal fun isWritable(obj: DeltaCRDT): Boolean {
-        return openedObjects[obj]?.second == false
+        return openedObjectsByRef[obj]?.second == false
     }
 }
