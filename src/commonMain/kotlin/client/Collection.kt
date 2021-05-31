@@ -68,7 +68,7 @@ class Collection {
     /**
      * Remote updates ready to be pulled
      */
-    internal val waitingPull: MutableMap<DeltaCRDT, DeltaCRDT> = mutableMapOf()
+    internal val waitingPull: MutableMap<CObjectUId, DeltaCRDT> = mutableMapOf()
 
     /**
      * Default constructor.
@@ -89,9 +89,12 @@ class Collection {
     @Name("pull")
     fun pull(type: ConsistencyLevel) {
         for ((k, v) in this.waitingPull) {
-            k.merge(v)
+            val crdt = this.getObject(k)
+            if (crdt != null) {
+                crdt.merge(v)
+                this.waitingPull.remove(k)
+            }
         }
-        this.waitingPull.clear()
     }
 
     // c_pull_XX_view(v)
@@ -121,7 +124,7 @@ class Collection {
         }
 
         obj = DeltaCRDTFactory.createDeltaCRDT(type, this.attachedSession.environment)
-        CServiceAdapter.getObject(this.attachedSession.getDbName(), this.attachedSession.getServiceUrl(), objectUId, obj, this)
+        CServiceAdapter.getObject(this.attachedSession.getDbName(), this.attachedSession.getServiceUrl(), objectUId, this)
         this.openedObjectsById[objectUId] = Pair(obj, readOnly)
         this.openedObjectsByRef[obj] = Pair(objectUId, readOnly)
         return obj

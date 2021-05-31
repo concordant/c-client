@@ -49,7 +49,7 @@ class ClientEnvironment(val session: Session, uid: ClientUId) : SimpleEnvironmen
         val objectUId = collection.getObjectUId(obj) ?: throw RuntimeException("This object has been closed.")
 
         // Get distant version of the object
-        CServiceAdapter.getObject(session.getDbName(), session.getServiceUrl(), objectUId, obj, collection)
+        CServiceAdapter.getObject(session.getDbName(), session.getServiceUrl(), objectUId, collection)
     }
 
     /**
