@@ -56,9 +56,9 @@ class Collection {
     private var isClosed: Boolean = false
 
     /**
-     * The objects opened within this collection indexed by ID.
+     * Contains all objects (opened or not) within this collection indexed by ID.
      */
-    internal val openedObjectsById: MutableMap<CObjectUId, Pair<DeltaCRDT, Boolean>> = mutableMapOf()
+    internal val objectsById: MutableMap<CObjectUId, DeltaCRDT> = mutableMapOf()
 
     /**
      * The objects opened within this collection indexed by reference.
@@ -92,8 +92,10 @@ class Collection {
             val crdt = this.getObject(k)
             if (crdt != null) {
                 crdt.merge(v)
-                this.waitingPull.remove(k)
+            } else {
+                this.objectsById[k] = v
             }
+            this.waitingPull.remove(k)
         }
     }
 
@@ -106,6 +108,7 @@ class Collection {
     /**
      * Opens an object of the collection.
      * @param objectId the name of the object.
+     * @param type type of the object.
      * @param readOnly is the object open in read-only mode.
      * @param handler currently not used.
      */
@@ -120,12 +123,15 @@ class Collection {
         var obj : DeltaCRDT? = this.getObject(objectUId)
 
         if (obj !== null) {
+            if (this.getObjectUId(obj) === null) {
+                this.openedObjectsByRef[obj] = Pair(objectUId, readOnly)
+            }
             return obj
         }
 
         obj = DeltaCRDTFactory.createDeltaCRDT(type, this.attachedSession.environment)
         CServiceAdapter.getObject(this.attachedSession.getDbName(), this.attachedSession.getServiceUrl(), objectUId, this)
-        this.openedObjectsById[objectUId] = Pair(obj, readOnly)
+        this.objectsById[objectUId] = obj
         this.openedObjectsByRef[obj] = Pair(objectUId, readOnly)
         return obj
     }
@@ -135,7 +141,7 @@ class Collection {
      */
     @Name("close")
     fun close() {
-        this.openedObjectsById.clear()
+        this.objectsById.clear()
         this.openedObjectsByRef.clear()
 
         this.isClosed = true
@@ -147,27 +153,20 @@ class Collection {
      * Get the [obj] of [CObjectUID] or null if not managed by this collection
      */
     internal fun getObject(objectUId: CObjectUId): DeltaCRDT? {
-        return openedObjectsById[objectUId]?.first
+        return this.objectsById[objectUId]
     }
 
     /**
      * Get the [CObjectUID] of [obj] or null if not managed by this collection
      */
     internal fun getObjectUId(obj: DeltaCRDT): CObjectUId? {
-        return openedObjectsByRef[obj]?.first
-    }
-
-    /**
-     * Check if the obj of [objectUId] is open and writable
-     */
-    internal fun isWritable(objectUId: CObjectUId): Boolean {
-        return openedObjectsById[objectUId]?.second == false
+        return this.openedObjectsByRef[obj]?.first
     }
 
     /**
      * Check if [obj] is open and writable
      */
     internal fun isWritable(obj: DeltaCRDT): Boolean {
-        return openedObjectsByRef[obj]?.second == false
+        return this.openedObjectsByRef[obj]?.second == false
     }
 }
