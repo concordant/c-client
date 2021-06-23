@@ -37,7 +37,7 @@ import kotlinx.serialization.json.Json
  */
 class CServiceAdapter {
     companion object {
-        private val ActiveGets: MutableMap<DeltaCRDT, Int> = mutableMapOf()
+        private val ActiveGets: MutableMap<CObjectUId, Int> = mutableMapOf()
 
         /**
          * Connection to the database
@@ -62,18 +62,18 @@ class CServiceAdapter {
          * @param objectUId crdt id
          * @param target the delta crdt in which distant value should be merged
          */
-        fun getObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, target: DeltaCRDT, collection: Collection) {
-            when (ActiveGets.getOrElse(target){0}) {
-                0 -> ActiveGets[target] = 1
+        fun getObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, collection: Collection) {
+            when (ActiveGets.getOrElse(objectUId){0}) {
+                0 -> ActiveGets[objectUId] = 1
                 1 -> {
-                    ActiveGets[target] = 2
+                    ActiveGets[objectUId] = 2
                     return
                 }
                 else -> return
             }
 
             GlobalScope.launch {
-                while (ActiveGets.getOrElse(target){0} > 0) {
+                while (ActiveGets.getOrElse(objectUId){0} > 0) {
                     val client = HttpClient()
                     try {
                         var crdtJson = client.post<String>{
@@ -87,12 +87,12 @@ class CServiceAdapter {
                         crdtJson = crdtJson.replace("\\\\n", "\\n"); // replace \\n with \n
                         crdtJson = crdtJson.replace("\\\\\\", "\\\\"); // replace \\\ with \\
                         crdtJson = crdtJson.replace("\\\"", "\""); // replace \" with "
-                        collection.waitingPull[target] = DeltaCRDT.fromJson(crdtJson)
+                        collection.waitingPull[objectUId] = DeltaCRDT.fromJson(crdtJson)
 
                         delay(3000L)
-                        when (ActiveGets[target]) {
-                            1 -> ActiveGets[target] = 0
-                            2 -> ActiveGets[target] = 1
+                        when (ActiveGets[objectUId]) {
+                            1 -> ActiveGets[objectUId] = 0
+                            2 -> ActiveGets[objectUId] = 1
                             else -> throw IllegalArgumentException("Invalid value")
                         }
                     } catch (e: Exception) {
