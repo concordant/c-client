@@ -69,7 +69,7 @@ class CollectionTest : StringSpec({
 
     "close is done in cascade from collection" {
         val collection = session.openCollection("mycollection", false)
-        val deltacrdt = collection.open("mycounter1", "PNCounter", false)
+        val deltacrdt = collection.open("mycounter", "PNCounter", false)
         collection.close()
         shouldThrow<RuntimeException> {
             session.transaction(ConsistencyLevel.None) {

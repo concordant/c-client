@@ -29,8 +29,7 @@ import io.kotest.matchers.shouldBe
 /**
  * Tests suite for Concordant objects usage.
  */
-class ObjectTest : StringSpec({
-
+class CObjectTest : StringSpec({
     "open read collection then open write object should fail" {
         val session = Session.connect(dbname, svcUrl, svcCred)
         val collection = session.openCollection("mycollection", true)
@@ -102,34 +101,12 @@ class ObjectTest : StringSpec({
 
     // Opening twice an object should return the same object
     // instead of a new copy.
-    // This test will need to be updated as soon as it is done.
     "open two times an object should work" {
         val session = Session.connect(dbname, svcUrl, svcCred)
         val collection = session.openCollection("mycollection", false)
-        val deltacrdt = collection.open("mycounterwork", "PNCounter", false)
-        var value1 = 1
-        session.transaction(ConsistencyLevel.None) {
-            if (deltacrdt is PNCounter) {
-                value1 = deltacrdt.get()
-            }
-        }
-        value1.shouldBe(0)
-        session.transaction(ConsistencyLevel.None) {
-            if (deltacrdt is PNCounter) {
-                deltacrdt.increment(12)
-                deltacrdt.decrement(3)
-                value1 = deltacrdt.get()
-            }
-        }
-        value1.shouldBe(9)
-        val deltacrdt2 = collection.open("mycounterwork", "PNCounter", false)
-        var value2 = 1
-        session.transaction(ConsistencyLevel.None) {
-            if (deltacrdt2 is PNCounter) {
-                value2 = deltacrdt2.get()
-            }
-        }
-        value2.shouldBe(0)
+        val deltacrdt1 = collection.open("mycounter", "PNCounter", false)
+        val deltacrdt2 = collection.open("mycounter", "PNCounter", false)
+        deltacrdt1.shouldBe(deltacrdt2)
         session.close()
     }
 
