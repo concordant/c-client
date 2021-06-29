@@ -88,6 +88,14 @@ class Collection {
     }
 
     /**
+     * Get the collection ID
+     */
+    @Name("getId")
+    fun getId() : String {
+        return this.id
+    }
+
+    /**
      * Pull remote updates into the current session
      * @param type is the consistency level of the operation
      */

@@ -159,5 +159,39 @@ class CServiceAdapter {
                 client.close()
             }
         }
+
+        /**
+         * Subscribe to the collection notification
+         * @param dbName the database name
+         * @param collectionUId the collection id
+         */
+        fun subscribe(dbName: String, serviceUrl: String, collectionUId: CollectionUId, userId: ClientUId) {
+            GlobalScope.launch {
+                val client = HttpClient()
+                val resp = client.post<String> {
+                    url("$serviceUrl/api/subscribe")
+                    contentType(ContentType.Application.Json)
+                    body = """{"appName":"$dbName","collectionUId":"$collectionUId","userId":"$userId"}"""
+                }
+                client.close()
+            }
+        }
+
+        /**
+         * Unsubscribe to the collection notification
+         * @param dbName the database name
+         * @param collectionUId the collection id
+         */
+        fun unsubscribe(dbName: String, serviceUrl: String, collectionUId: CollectionUId, userId: ClientUId) {
+            GlobalScope.launch {
+                val client = HttpClient()
+                val resp = client.post<String> {
+                    url("$serviceUrl/api/unsubscribe")
+                    contentType(ContentType.Application.Json)
+                    body = """{"appName":"$dbName","collectionUId":"$collectionUId","userId":"$userId"}"""
+                }
+                client.close()
+            }
+        }
     }
 }

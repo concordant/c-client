@@ -107,6 +107,7 @@ class Session {
 
         val newCollection = Collection(this, collectionUId, readOnly)
         this.openedCollections[collectionUId] = newCollection
+        CServiceAdapter.subscribe(this.getDbName(), this.getServiceUrl(), collectionUId, this.clientUId)
         return newCollection
     }
 
@@ -116,6 +117,7 @@ class Session {
      */
     internal fun notifyClosedCollection(collectionUId: CollectionUId) {
         this.openedCollections.remove(collectionUId)
+        CServiceAdapter.unsubscribe(this.getDbName(), this.getServiceUrl(), collectionUId, this.clientUId)
     }
 
     /**
@@ -162,6 +164,7 @@ class Session {
 
         val collections = this.openedCollections.values
         for (collection in collections) {
+            CServiceAdapter.unsubscribe(this.getDbName(), this.getServiceUrl(), collection.getId(), this.clientUId)
             collection.close()
         }
 
