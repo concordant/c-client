@@ -29,6 +29,11 @@ import client.utils.CServiceAdapter
 import crdtlib.crdt.DeltaCRDT
 import crdtlib.crdt.DeltaCRDTFactory
 import crdtlib.utils.VersionVector
+import kotlinx.serialization.*
+import kotlinx.serialization.json.Json
+
+@Serializable
+data class CRDTJson(val _id: String)
 
 /**
 * This class represents a collection of objects.
@@ -63,7 +68,7 @@ class Collection {
     /**
      * The objects opened within this collection indexed by reference.
      */
-    internal val openedObjectsByRef: MutableMap<DeltaCRDT, Pair<CObjectUId, Boolean>> = mutableMapOf()
+    internal val openedObjectsByRef: MutableMap<DeltaCRDT, Triple<CObjectUId, Boolean, NotificationHandler>> = mutableMapOf()
 
     /**
      * Remote updates ready to be pulled
@@ -124,7 +129,7 @@ class Collection {
 
         if (obj !== null) {
             if (this.getObjectUId(obj) === null) {
-                this.openedObjectsByRef[obj] = Pair(objectUId, readOnly)
+                this.openedObjectsByRef[obj] = Triple(objectUId, readOnly, handler)
             }
             return obj
         }
@@ -132,7 +137,7 @@ class Collection {
         obj = DeltaCRDTFactory.createDeltaCRDT(type, this.attachedSession.environment)
         CServiceAdapter.getObject(this.attachedSession.getDbName(), this.attachedSession.getServiceUrl(), objectUId, this)
         this.objectsById[objectUId] = obj
-        this.openedObjectsByRef[obj] = Pair(objectUId, readOnly)
+        this.openedObjectsByRef[obj] = Triple(objectUId, readOnly, handler)
         return obj
     }
 
@@ -168,5 +173,41 @@ class Collection {
      */
     internal fun isWritable(obj: DeltaCRDT): Boolean {
         return this.openedObjectsByRef[obj]?.second == false
+    }
+
+    /**
+     * Get the [NotificationHandler] of [obj] or null if not managed by this collection
+     */
+    internal fun getHandler(obj: DeltaCRDT): NotificationHandler? {
+        return this.openedObjectsByRef[obj]?.third
+    }
+
+    /**
+     * Adds a incoming update in the cache
+     * and notify the application if a handler is set
+     * @param objectUId UId of the crdt
+     * @param obj new update
+     */
+    internal fun newUpdate(objectUId: CObjectUId, obj: DeltaCRDT): Boolean {
+        this.waitingPull[objectUId] = obj
+        val crdt = this.getObject(objectUId)
+        if (crdt !== null) {
+            val handler = this.getHandler(crdt)
+            if (handler !== null) {
+                handler(this.attachedSession.environment.getState(), objectUId)
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
+     * Called when a new message arrives
+     * @param message new message data
+     */
+    internal fun newMessage(message: String) {
+        val newCRDT = Json{ignoreUnknownKeys = true}.decodeFromString<CRDTJson>(message)
+        val objectUId : CObjectUId = Json.decodeFromString<CObjectUId>(newCRDT._id)
+        this.newUpdate(objectUId, DeltaCRDT.fromJson(message))
     }
 }
