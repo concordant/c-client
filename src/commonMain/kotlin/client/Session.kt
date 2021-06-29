@@ -94,6 +94,14 @@ class Session {
     }
 
     /**
+     * Get the client unique identifier
+     */
+    @Name("getClientUId")
+    fun getClientUId() : ClientUId {
+        return this.clientUId
+    }
+
+    /**
      * Opens a given collection with the given read-only mode.
      * @param collectionUId the collection unique identifier.
      * @param readOnly is read-only mode activated.

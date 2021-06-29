@@ -48,6 +48,8 @@ class CServiceAdapter {
             GlobalScope.launch {
                 if (isServiceWorkerAvailable()) {
                     registerServiceWorker(session)
+                } else {
+                    connectWebSocket(session)
                 }
                 val client = HttpClient()
                 val resp = client.post<String> {
