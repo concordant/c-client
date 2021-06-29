@@ -149,6 +149,14 @@ class Collection {
         return obj
     }
 
+    @Name("forceGet")
+    fun forceGet(obj: DeltaCRDT) {
+        val objectUId = this.getObjectUId(obj)
+        if (objectUId !== null) {
+            CServiceAdapter.getObject(this.attachedSession.getDbName(), this.attachedSession.getServiceUrl(), objectUId, this)
+        }
+    }
+
     /**
      * Closes this collection.
      */

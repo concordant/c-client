@@ -184,11 +184,10 @@ class Session {
         @Name("connect")
         fun connect(dbName: String, serviceUrl: String, credentials: String): Session {
             if (ActiveSession != null) throw RuntimeException("Another session is already active.")
-            CServiceAdapter.connect(dbName, serviceUrl)
-
             val clientUId = ClientUId(generateUUId4())
             val session = Session(dbName, serviceUrl, clientUId)
             ActiveSession = session
+            CServiceAdapter.connect(dbName, serviceUrl, session)
             return session
         }
     }

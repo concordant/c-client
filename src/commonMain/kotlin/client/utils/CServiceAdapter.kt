@@ -20,7 +20,9 @@
 package client.utils
 
 import client.Collection
+import client.Session
 import crdtlib.crdt.DeltaCRDT
+import crdtlib.utils.ClientUId
 import crdtlib.utils.Environment
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
@@ -37,15 +39,16 @@ import kotlinx.serialization.json.Json
  */
 class CServiceAdapter {
     companion object {
-        private val ActiveGets: MutableMap<CObjectUId, Int> = mutableMapOf()
 
         /**
          * Connection to the database
          * @param dbName database name
          */
-        fun connect(dbName: String, serviceUrl: String) {
+        fun connect(dbName: String, serviceUrl: String, session: Session) {
             GlobalScope.launch {
-                registerServiceWorker()
+                if (isServiceWorkerAvailable()) {
+                    registerServiceWorker(session)
+                }
                 val client = HttpClient()
                 val resp = client.post<String> {
                     url("$serviceUrl/api/create-app")
@@ -63,43 +66,26 @@ class CServiceAdapter {
          * @param target the delta crdt in which distant value should be merged
          */
         fun getObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, collection: Collection) {
-            when (ActiveGets.getOrElse(objectUId){0}) {
-                0 -> ActiveGets[objectUId] = 1
-                1 -> {
-                    ActiveGets[objectUId] = 2
-                    return
-                }
-                else -> return
-            }
-
             GlobalScope.launch {
-                while (ActiveGets.getOrElse(objectUId){0} > 0) {
-                    val client = HttpClient()
-                    try {
-                        var crdtJson = client.post<String>{
-                            url("$serviceUrl/api/get-object")
-                            contentType(ContentType.Application.Json)
-                            body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}"}"""
-                        }
-                        crdtJson = crdtJson.removePrefix("\"").removeSuffix("\"")
-                        crdtJson = crdtJson.replace("\\\\\\\"", "\\\\\""); // replace \\\" with \\"
-                        crdtJson = crdtJson.replace("\\\\'", "'"); // replace \\' with '
-                        crdtJson = crdtJson.replace("\\\\n", "\\n"); // replace \\n with \n
-                        crdtJson = crdtJson.replace("\\\\\\", "\\\\"); // replace \\\ with \\
-                        crdtJson = crdtJson.replace("\\\"", "\""); // replace \" with "
-                        collection.waitingPull[objectUId] = DeltaCRDT.fromJson(crdtJson)
-
-                        delay(3000L)
-                        when (ActiveGets[objectUId]) {
-                            1 -> ActiveGets[objectUId] = 0
-                            2 -> ActiveGets[objectUId] = 1
-                            else -> throw IllegalArgumentException("Invalid value")
-                        }
-                    } catch (e: Exception) {
-                        delay(1000L)
-                    } finally {
-                        client.close()
+                val client = HttpClient()
+                try {
+                    var crdtJson = client.post<String>{
+                        url("$serviceUrl/api/get-object")
+                        contentType(ContentType.Application.Json)
+                        body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}"}"""
                     }
+                    crdtJson = crdtJson.removePrefix("\"").removeSuffix("\"")
+                    crdtJson = crdtJson.replace("\\\\\\\"", "\\\\\""); // replace \\\" with \\"
+                    crdtJson = crdtJson.replace("\\\\'", "'"); // replace \\' with '
+                    crdtJson = crdtJson.replace("\\\\n", "\\n"); // replace \\n with \n
+                    crdtJson = crdtJson.replace("\\\\\\", "\\\\"); // replace \\\ with \\
+                    crdtJson = crdtJson.replace("\\\"", "\""); // replace \" with "
+
+                    collection.newUpdate(objectUId, DeltaCRDT.fromJson(crdtJson))
+                } catch (e: Exception) {
+                    delay(1000L)
+                } finally {
+                    client.close()
                 }
             }
         }

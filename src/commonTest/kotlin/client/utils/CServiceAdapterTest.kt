@@ -50,7 +50,7 @@ class CServiceAdapterTest : StringSpec({
 
         CServiceAdapter.delete(dbname2, svcUrl)
         delay(300)
-        CServiceAdapter.connect(dbname2, svcUrl)
+        CServiceAdapter.connect(dbname2, svcUrl, session)
         delay(300)
 
         val uid = ClientUId("clientid")
