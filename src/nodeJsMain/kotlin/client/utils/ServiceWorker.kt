@@ -19,11 +19,18 @@
 
 package client.utils
 
+import client.Session
+import client.utils.CObjectUId
+import crdtlib.crdt.DeltaCRDT
 import kotlinx.browser.window
-
+import kotlinx.serialization.*
+import kotlinx.serialization.json.Json
 
 internal val serviceWorkerURL = "c-service-worker.js"
 internal var isActive = false
+
+@Serializable
+data class Message(val type: String, val data: String)
 
 /**
  * Is service worker feature available?
@@ -37,12 +44,36 @@ actual fun isServiceWorkerAvailable(): Boolean {
 
 /**
  * Register the service worker.
+ * @param session the actual session
  */
-actual fun registerServiceWorker() {
+actual fun registerServiceWorker(session: Session) {
     if (isServiceWorkerAvailable()) {
-        window.navigator.serviceWorker.register(serviceWorkerURL).then {
-            registration -> isActive = true
+        window.navigator.serviceWorker.register(serviceWorkerURL).then(
+            onFulfilled = {
+                registration -> isActive = true
+            },
+            onRejected = {
+                connectWebSocket(session)
+            }
+        )
+        window.navigator.serviceWorker.oncontrollerchange = {
+            session.getOpenedCollection().keys.forEach({
+                CServiceAdapter.unsubscribe(session.getDbName(), session.getServiceUrl(), it, session.getClientUId())
+                CServiceAdapter.subscribe(session.getDbName(), session.getServiceUrl(), it, session.getClientUId())
+            })
         }
+        window.navigator.serviceWorker.onmessage = {
+            val msg = Json.decodeFromString<Message>("" + it.data)
+            if (msg.type === "update") {
+                val collection = session.openedCollections.values.elementAtOrNull(0)
+                    ?: throw RuntimeException("There is no opened collection.")
+                collection.newMessage(msg.data)
+            } else {
+                throw RuntimeException("Unknown message type received from the service worker : " + msg)
+            }
+        }
+    } else {
+        throw RuntimeException("Services worker not supported by the browser.")
     }
 }
 

@@ -50,9 +50,11 @@ let collection = session.openCollection("mycollection", false);
 
 // An object must be opened before using it in a transaction.
 // Open the PNCounter with objectId "mycounter", with read/write access.
+// An optional `handler` may be provided,
+// it will be called when an update is available for this PNCounter.
 // If it does not exist, it is created in a type-specific default state.
 // Note that objects of different types may coexist under a same objectId.
-let cntr = collection.open("mycounter", "PNCounter", false);
+let cntr = collection.open("mycounter", "PNCounter", false, [handler]);
 
 // Objects values can be accessed/updated in a transaction only.
 session.transaction(ConsistencyLevel.None, () => {
