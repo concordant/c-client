@@ -19,6 +19,8 @@
 
 package client.utils
 
+import client.Session
+
 /**
  * Is service worker feature available?
  * @return true if service worker is available, false otherwise
@@ -28,7 +30,7 @@ expect fun isServiceWorkerAvailable(): Boolean
 /**
  * Register a service worker.
  */
-expect fun registerServiceWorker()
+expect fun registerServiceWorker(session: Session)
 
 /**
  * Is service worker registered?
