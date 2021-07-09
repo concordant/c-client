@@ -102,6 +102,13 @@ class Session {
     }
 
     /**
+     * Get the map of opened collection
+     */
+    internal fun getOpenedCollection() : MutableMap<CollectionUId, Collection> {
+        return this.openedCollections
+    }
+
+    /**
      * Opens a given collection with the given read-only mode.
      * @param collectionUId the collection unique identifier.
      * @param readOnly is read-only mode activated.
