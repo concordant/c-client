@@ -46,11 +46,7 @@ class CServiceAdapter {
          */
         fun connect(dbName: String, serviceUrl: String, session: Session) {
             GlobalScope.launch {
-                if (isServiceWorkerAvailable()) {
-                    registerServiceWorker(session)
-                } else {
-                    connectWebSocket(session)
-                }
+                registerServiceWorker(session)
                 val client = HttpClient()
                 val resp = client.post<String> {
                     url("$serviceUrl/api/create-app")

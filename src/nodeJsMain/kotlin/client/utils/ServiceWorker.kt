@@ -53,9 +53,15 @@ actual fun registerServiceWorker(session: Session) {
                 registration -> isActive = true
             },
             onRejected = {
-                // Nothing
+                connectWebSocket(session)
             }
         )
+        window.navigator.serviceWorker.oncontrollerchange = {
+            session.getOpenedCollection().keys.forEach({
+                CServiceAdapter.unsubscribe(session.getDbName(), session.getServiceUrl(), it, session.getClientUId())
+                CServiceAdapter.subscribe(session.getDbName(), session.getServiceUrl(), it, session.getClientUId())
+            })
+        }
         window.navigator.serviceWorker.onmessage = {
             val msg = Json.decodeFromString<Message>("" + it.data)
             if (msg.type === "update") {
