@@ -136,7 +136,10 @@ class Collection {
         var obj : DeltaCRDT? = this.getObject(objectUId)
 
         if (obj !== null) {
-            throw RuntimeException("Object already open.")
+            if (this.getObjectUId(obj) === null) {
+                this.openedObjectsByRef[obj] = Triple(objectUId, readOnly, handler)
+            }
+            return obj
         }
 
         obj = DeltaCRDTFactory.createDeltaCRDT(type, this.attachedSession.environment)
