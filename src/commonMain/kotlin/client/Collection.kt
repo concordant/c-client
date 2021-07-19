@@ -71,7 +71,7 @@ class Collection {
     internal val openedObjectsByRef: MutableMap<DeltaCRDT, Triple<CObjectUId, Boolean, NotificationHandler>> = mutableMapOf()
 
     /**
-     * Remote updates ready to be pulled
+     * Remote updates ready to be pulled.
      */
     internal val waitingPull: MutableMap<CObjectUId, DeltaCRDT> = mutableMapOf()
 
@@ -88,7 +88,7 @@ class Collection {
     }
 
     /**
-     * Get the collection ID
+     * Get the collection ID.
      */
     @Name("getId")
     fun getId() : String {
@@ -96,8 +96,8 @@ class Collection {
     }
 
     /**
-     * Pull remote updates into the current session
-     * @param type is the consistency level of the operation
+     * Pull remote updates into the current session.
+     * @param type is the consistency level of the operation.
      */
     @Name("pull")
     fun pull(type: ConsistencyLevel) {
@@ -123,7 +123,7 @@ class Collection {
      * @param objectId the name of the object.
      * @param type type of the object.
      * @param readOnly is the object open in read-only mode.
-     * @param handler currently not used.
+     * @param handler handler to call when a new update is received.
      */
     @Name("open")
     fun open(objectId: String, type: String, readOnly: Boolean, handler: NotificationHandler = { _, _ -> Unit }): DeltaCRDT {
@@ -149,6 +149,9 @@ class Collection {
         return obj
     }
 
+    /**
+     * Send a get request for the [obj].
+     */
     @Name("forceGet")
     fun forceGet(obj: DeltaCRDT) {
         val objectUId = this.getObjectUId(obj)
@@ -171,21 +174,21 @@ class Collection {
     }
 
     /**
-     * Get the [obj] of [CObjectUID] or null if not managed by this collection
+     * Get the [obj] of [CObjectUID] or null if not managed by this collection.
      */
     internal fun getObject(objectUId: CObjectUId): DeltaCRDT? {
         return this.objectsById[objectUId]
     }
 
     /**
-     * Get the [CObjectUID] of [obj] or null if not managed by this collection
+     * Get the [CObjectUID] of [obj] or null if not managed by this collection.
      */
     internal fun getObjectUId(obj: DeltaCRDT): CObjectUId? {
         return this.openedObjectsByRef[obj]?.first
     }
 
     /**
-     * Check if [obj] is open and writable
+     * Check if [obj] is open and writable.
      */
     internal fun isWritable(obj: DeltaCRDT): Boolean {
         return this.openedObjectsByRef[obj]?.second == false
@@ -199,10 +202,10 @@ class Collection {
     }
 
     /**
-     * Adds a incoming update in the cache
-     * and notify the application if a handler is set
-     * @param objectUId UId of the crdt
-     * @param obj new update
+     * Adds a incoming update in the cache.
+     * and notify the application if a handler is set.
+     * @param objectUId UId of the crdt.
+     * @param obj new update.
      */
     internal fun newUpdate(objectUId: CObjectUId, obj: DeltaCRDT): Boolean {
         this.waitingPull[objectUId] = obj
@@ -218,8 +221,8 @@ class Collection {
     }
 
     /**
-     * Called when a new message arrives
-     * @param message new message data
+     * Called when a new message arrives.
+     * @param message new message data.
      */
     internal fun newMessage(message: String) {
         val newCRDT = Json{ignoreUnknownKeys = true}.decodeFromString<CRDTJson>(message)
