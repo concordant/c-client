@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add (un)subscription request
 - Add explicit get method
 - Register a service worker (if available) that manages update messages
-- Automatic Web Socket connection when opening a session)
+- Automatically open a WebSocket connection if ServiceWorker is not available
+- Add a getter for openedCollections in Session
+- Add multiple handlers per object
 
 ### Changed
 - Use NotificationHandler to notify the app when an update arrives
@@ -17,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change key type of waitingPull from DeltaCRDT to CObjectUId
 - Remove implicit get when performing onRead
 - Remove the limit of frequency of get requests
-- Open an already opened object raises an exception
+- Open an already opened object in a different mode raises an exception
 
 ### Deprecated
 ### Removed
