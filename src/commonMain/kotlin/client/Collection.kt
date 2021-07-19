@@ -68,7 +68,7 @@ class Collection {
     /**
      * The objects opened within this collection indexed by reference.
      */
-    internal val openedObjectsByRef: MutableMap<DeltaCRDT, Triple<CObjectUId, Boolean, NotificationHandler>> = mutableMapOf()
+    internal val openedObjectsByRef: MutableMap<DeltaCRDT, Triple<CObjectUId, Boolean, MutableSet<NotificationHandler>>> = mutableMapOf()
 
     /**
      * Remote updates ready to be pulled.
@@ -137,7 +137,12 @@ class Collection {
 
         if (obj !== null) {
             if (this.getObjectUId(obj) === null) {
-                this.openedObjectsByRef[obj] = Triple(objectUId, readOnly, handler)
+                this.openedObjectsByRef[obj] = Triple(objectUId, readOnly, mutableSetOf(handler))
+            } else {
+                if (this.isWritable(obj) === readOnly) {
+                    throw RuntimeException("Object has been opened in different mode.")
+                }
+                this.openedObjectsByRef[obj]!!.third!!.add(handler)
             }
             return obj
         }
@@ -145,7 +150,7 @@ class Collection {
         obj = DeltaCRDTFactory.createDeltaCRDT(type, this.attachedSession.environment)
         CServiceAdapter.getObject(this.attachedSession.getDbName(), this.attachedSession.getServiceUrl(), objectUId, this)
         this.objectsById[objectUId] = obj
-        this.openedObjectsByRef[obj] = Triple(objectUId, readOnly, handler)
+        this.openedObjectsByRef[obj] = Triple(objectUId, readOnly, mutableSetOf(handler))
         return obj
     }
 
@@ -195,9 +200,9 @@ class Collection {
     }
 
     /**
-     * Get the [NotificationHandler] of [obj] or null if not managed by this collection
+     * Get the [NotificationHandler]s of [obj] or null if not managed by this collection
      */
-    internal fun getHandler(obj: DeltaCRDT): NotificationHandler? {
+    internal fun getHandlers(obj: DeltaCRDT): MutableSet<NotificationHandler>? {
         return this.openedObjectsByRef[obj]?.third
     }
 
@@ -207,17 +212,17 @@ class Collection {
      * @param objectUId UId of the crdt.
      * @param obj new update.
      */
-    internal fun newUpdate(objectUId: CObjectUId, obj: DeltaCRDT): Boolean {
+    internal fun newUpdate(objectUId: CObjectUId, obj: DeltaCRDT) {
         this.waitingPull[objectUId] = obj
         val crdt = this.getObject(objectUId)
         if (crdt !== null) {
-            val handler = this.getHandler(crdt)
-            if (handler !== null) {
-                handler(this.attachedSession.environment.getState(), objectUId)
-                return true
+            val handlers = this.getHandlers(crdt)
+            if (handlers !== null) {
+                for (handler in handlers) {
+                    handler(this.attachedSession.environment.getState(), objectUId)
+                }
             }
         }
-        return false
     }
 
     /**
