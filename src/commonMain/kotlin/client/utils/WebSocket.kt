@@ -43,8 +43,11 @@ fun connectWebSocket(session: Session) {
     client = HttpClient {
         install(WebSockets)
     }
+    val expr = """https?:\/\/(www\.)?([-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6})\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)"""
+    var regex = expr.toRegex()
+    val host = regex.find(session.getServiceUrl())!!.groupValues!!.get(2)
     GlobalScope.launch {
-        client?.webSocket(method = HttpMethod.Get, host = "127.0.0.1", port = 8999, path = "/") {
+        client?.webSocket(method = HttpMethod.Get, host = host, port = 8999, path = "/") {
             send("""{"appName":""""+session.getDbName()+"""","userId":""""+session.getClientUId()+""""}""")
             for (frame in incoming) {
                 when (frame) {
