@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+
+## [1.3.0] - 2021-07-20
+### Added
 - Add (un)subscription request
 - Add explicit get method
 - Register a service worker (if available) that manages update messages
@@ -21,11 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove implicit get when performing onRead
 - Remove the limit of frequency of get requests
 - Open an already opened object in a different mode raises an exception
-
-### Deprecated
-### Removed
-### Fixed
-### Security
 
 ## [1.2.0] - 2021-05-06
 ### Added
