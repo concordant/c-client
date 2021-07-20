@@ -20,7 +20,9 @@
 package client.utils
 
 import client.Collection
+import client.Session
 import crdtlib.crdt.DeltaCRDT
+import crdtlib.utils.ClientUId
 import crdtlib.utils.Environment
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
@@ -37,14 +39,18 @@ import kotlinx.serialization.json.Json
  */
 class CServiceAdapter {
     companion object {
-        private val ActiveGets: MutableMap<DeltaCRDT, Int> = mutableMapOf()
 
         /**
          * Connection to the database
          * @param dbName database name
          */
-        fun connect(dbName: String, serviceUrl: String) {
+        fun connect(dbName: String, serviceUrl: String, session: Session) {
             GlobalScope.launch {
+                if (isServiceWorkerAvailable()) {
+                    registerServiceWorker(session)
+                } else {
+                    connectWebSocket(session)
+                }
                 val client = HttpClient()
                 val resp = client.post<String> {
                     url("$serviceUrl/api/create-app")
@@ -61,44 +67,27 @@ class CServiceAdapter {
          * @param objectUId crdt id
          * @param target the delta crdt in which distant value should be merged
          */
-        fun getObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, target: DeltaCRDT, collection: Collection) {
-            when (ActiveGets.getOrElse(target){0}) {
-                0 -> ActiveGets[target] = 1
-                1 -> {
-                    ActiveGets[target] = 2
-                    return
-                }
-                else -> return
-            }
-
+        fun getObject(dbName: String, serviceUrl: String, objectUId: CObjectUId, collection: Collection) {
             GlobalScope.launch {
-                while (ActiveGets.getOrElse(target){0} > 0) {
-                    val client = HttpClient()
-                    try {
-                        var crdtJson = client.post<String>{
-                            url("$serviceUrl/api/get-object")
-                            contentType(ContentType.Application.Json)
-                            body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}"}"""
-                        }
-                        crdtJson = crdtJson.removePrefix("\"").removeSuffix("\"")
-                        crdtJson = crdtJson.replace("\\\\\\\"", "\\\\\""); // replace \\\" with \\"
-                        crdtJson = crdtJson.replace("\\\\'", "'"); // replace \\' with '
-                        crdtJson = crdtJson.replace("\\\\n", "\\n"); // replace \\n with \n
-                        crdtJson = crdtJson.replace("\\\\\\", "\\\\"); // replace \\\ with \\
-                        crdtJson = crdtJson.replace("\\\"", "\""); // replace \" with "
-                        collection.waitingPull[target] = DeltaCRDT.fromJson(crdtJson)
-
-                        delay(3000L)
-                        when (ActiveGets[target]) {
-                            1 -> ActiveGets[target] = 0
-                            2 -> ActiveGets[target] = 1
-                            else -> throw IllegalArgumentException("Invalid value")
-                        }
-                    } catch (e: Exception) {
-                        delay(1000L)
-                    } finally {
-                        client.close()
+                val client = HttpClient()
+                try {
+                    var crdtJson = client.post<String>{
+                        url("$serviceUrl/api/get-object")
+                        contentType(ContentType.Application.Json)
+                        body = """{"appName":"$dbName","id":"${Json.encodeToString(objectUId).replace("\"","\\\"")}"}"""
                     }
+                    crdtJson = crdtJson.removePrefix("\"").removeSuffix("\"")
+                    crdtJson = crdtJson.replace("\\\\\\\"", "\\\\\""); // replace \\\" with \\"
+                    crdtJson = crdtJson.replace("\\\\'", "'"); // replace \\' with '
+                    crdtJson = crdtJson.replace("\\\\n", "\\n"); // replace \\n with \n
+                    crdtJson = crdtJson.replace("\\\\\\", "\\\\"); // replace \\\ with \\
+                    crdtJson = crdtJson.replace("\\\"", "\""); // replace \" with "
+
+                    collection.newUpdate(objectUId, DeltaCRDT.fromJson(crdtJson))
+                } catch (e: Exception) {
+                    delay(1000L)
+                } finally {
+                    client.close()
                 }
             }
         }
@@ -141,6 +130,9 @@ class CServiceAdapter {
          * @param dbName database name
          */
         fun close(dbName: String, serviceUrl: String) {
+            GlobalScope.launch {
+                disconnectWebSocket()
+            }
         }
 
         /**
@@ -154,6 +146,40 @@ class CServiceAdapter {
                     url("$serviceUrl/api/delete-app")
                     contentType(ContentType.Application.Json)
                     body = """{"appName":"$dbName"}"""
+                }
+                client.close()
+            }
+        }
+
+        /**
+         * Subscribe to the collection notification
+         * @param dbName the database name
+         * @param collectionUId the collection id
+         */
+        fun subscribe(dbName: String, serviceUrl: String, collectionUId: CollectionUId, userId: ClientUId) {
+            GlobalScope.launch {
+                val client = HttpClient()
+                val resp = client.post<String> {
+                    url("$serviceUrl/api/subscribe")
+                    contentType(ContentType.Application.Json)
+                    body = """{"appName":"$dbName","collectionUId":"$collectionUId","userId":"$userId"}"""
+                }
+                client.close()
+            }
+        }
+
+        /**
+         * Unsubscribe to the collection notification
+         * @param dbName the database name
+         * @param collectionUId the collection id
+         */
+        fun unsubscribe(dbName: String, serviceUrl: String, collectionUId: CollectionUId, userId: ClientUId) {
+            GlobalScope.launch {
+                val client = HttpClient()
+                val resp = client.post<String> {
+                    url("$serviceUrl/api/unsubscribe")
+                    contentType(ContentType.Application.Json)
+                    body = """{"appName":"$dbName","collectionUId":"$collectionUId","userId":"$userId"}"""
                 }
                 client.close()
             }

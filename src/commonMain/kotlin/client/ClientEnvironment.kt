@@ -46,13 +46,7 @@ class ClientEnvironment(val session: Session, uid: ClientUId) : SimpleEnvironmen
         if (ActiveTransaction == null) throw RuntimeException("Code should be executed in a transaction")
 
         // Assert the object is opened
-        val infos = collection.openedObjects[obj] ?: throw RuntimeException("This object has been closed.")
-
-        // Assert the object unique identifier
-        val objectUId = infos.first
-
-        // Get distant version of the object
-        CServiceAdapter.getObject(session.getDbName(), session.getServiceUrl(), objectUId, obj, collection)
+        collection.getObjectUId(obj) ?: throw RuntimeException("This object has been closed.")
     }
 
     /**

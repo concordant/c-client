@@ -19,7 +19,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 description = "The Concordant multiplatform library, providing the high-level application-facing API"
 group = "io.concordant"
-version = "1.2.0"
+version = "1.3.0"
 
 plugins {
     kotlin("multiplatform") version "1.4.20"
@@ -54,6 +54,8 @@ repositories {
     maven(url = "https://jitpack.io")
 }
 
+val ktor_version: String by project
+
 // Kotlin build config, per target
 kotlin {
     // do not remove, even if empty
@@ -77,7 +79,8 @@ kotlin {
         commonMain {
             dependencies {
                 implementation("io.concordant:c-crdtlib:[1.0,2.0)")
-                implementation("io.ktor:ktor-client-core:1.4.1")
+                implementation("io.ktor:ktor-client-core:$ktor_version")
+                implementation("io.ktor:ktor-client-websockets:$ktor_version")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0")
             }
         }
@@ -87,13 +90,13 @@ kotlin {
                 implementation("io.kotest:kotest-property:4.3.1")
                 implementation("io.kotest:kotest-assertions-core:4.3.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
-                implementation("io.ktor:ktor-client-core:1.4.1")
+                implementation("io.ktor:ktor-client-core:$ktor_version")
             }
         }
 
         val jvmMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-cio-jvm:1.4.1")
+                implementation("io.ktor:ktor-client-cio-jvm:$ktor_version")
                 implementation("com.github.ntrrgc:ts-generator:1.1.1")
             }
         }
@@ -101,20 +104,20 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation("io.kotest:kotest-runner-junit5-jvm:4.3.1")
-                implementation("io.ktor:ktor-client-cio-jvm:1.4.1")
+                implementation("io.ktor:ktor-client-cio-jvm:$ktor_version")
             }
         }
 
         val nodeJsMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-js:1.4.1")
+                implementation("io.ktor:ktor-client-js:$ktor_version")
             }
         }
 
         val nodeJsTest by getting {
             dependencies {
                 implementation("io.kotest:kotest-framework-engine:4.3.1")
-                implementation("io.ktor:ktor-client-js:1.4.1")
+                implementation("io.ktor:ktor-client-js:$ktor_version")
             }
         }
     }
