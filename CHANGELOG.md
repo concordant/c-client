@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add explicit get method
 - Register a service worker (if available) that manages update messages
 - Automatically open a WebSocket connection if ServiceWorker is not available
+- Disconnect the WebSocket when closing the connection to the database
 - Add a getter for openedCollections in Session
 - Add multiple handlers per object
 

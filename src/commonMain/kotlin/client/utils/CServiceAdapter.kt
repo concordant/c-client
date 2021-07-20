@@ -130,6 +130,9 @@ class CServiceAdapter {
          * @param dbName database name
          */
         fun close(dbName: String, serviceUrl: String) {
+            GlobalScope.launch {
+                disconnectWebSocket()
+            }
         }
 
         /**
