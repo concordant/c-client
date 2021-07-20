@@ -94,6 +94,21 @@ class Session {
     }
 
     /**
+     * Get the client unique identifier
+     */
+    @Name("getClientUId")
+    fun getClientUId() : ClientUId {
+        return this.clientUId
+    }
+
+    /**
+     * Get the map of opened collection
+     */
+    internal fun getOpenedCollection() : MutableMap<CollectionUId, Collection> {
+        return this.openedCollections
+    }
+
+    /**
      * Opens a given collection with the given read-only mode.
      * @param collectionUId the collection unique identifier.
      * @param readOnly is read-only mode activated.
@@ -107,6 +122,7 @@ class Session {
 
         val newCollection = Collection(this, collectionUId, readOnly)
         this.openedCollections[collectionUId] = newCollection
+        CServiceAdapter.subscribe(this.getDbName(), this.getServiceUrl(), collectionUId, this.getClientUId())
         return newCollection
     }
 
@@ -116,6 +132,7 @@ class Session {
      */
     internal fun notifyClosedCollection(collectionUId: CollectionUId) {
         this.openedCollections.remove(collectionUId)
+        CServiceAdapter.unsubscribe(this.getDbName(), this.getServiceUrl(), collectionUId, this.getClientUId())
     }
 
     /**
@@ -162,6 +179,7 @@ class Session {
 
         val collections = this.openedCollections.values
         for (collection in collections) {
+            CServiceAdapter.unsubscribe(this.getDbName(), this.getServiceUrl(), collection.getId(), this.getClientUId())
             collection.close()
         }
 
@@ -181,11 +199,10 @@ class Session {
         @Name("connect")
         fun connect(dbName: String, serviceUrl: String, credentials: String): Session {
             if (ActiveSession != null) throw RuntimeException("Another session is already active.")
-            CServiceAdapter.connect(dbName, serviceUrl)
-
             val clientUId = ClientUId(generateUUId4())
             val session = Session(dbName, serviceUrl, clientUId)
             ActiveSession = session
+            CServiceAdapter.connect(dbName, serviceUrl, session)
             return session
         }
     }
