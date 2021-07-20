@@ -19,6 +19,8 @@
 
 package client.utils
 
+import client.Session
+
 /**
  * Service worker is always unavailable in JVM.
  * @return false
@@ -30,7 +32,7 @@ actual fun isServiceWorkerAvailable(): Boolean {
 /**
  * Does nothing, service worker is not used in JVM.
  */
-actual fun registerServiceWorker() {
+actual fun registerServiceWorker(session: Session) {
 }
 
 /**

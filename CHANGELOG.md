@@ -6,9 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Add (un)subscription request
+- Add explicit get method
+- Register a service worker (if available) that manages update messages
+- Automatically open a WebSocket connection if ServiceWorker is not available
+- Disconnect the WebSocket when closing the connection to the database
+- Add a getter for openedCollections in Session
+- Add multiple handlers per object
+
 ### Changed
-- Open an already opened object return the same reference
+- Use NotificationHandler to notify the app when an update arrives
+- Automatic subscription when opening a collection
 - Change key type of waitingPull from DeltaCRDT to CObjectUId
+- Remove implicit get when performing onRead
+- Remove the limit of frequency of get requests
+- Open an already opened object in a different mode raises an exception
+
 ### Deprecated
 ### Removed
 ### Fixed
@@ -22,11 +35,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Limit the frequency of get requests
 - Group updates of the same transaction
-- Update status
+- Update STATUS.md
 
 ## [1.1.6] - 2021-03-25
 ### Added
-- Add more unit tests
-- Add status file
+- Add new unit tests
+- Add STATUS.md file
+
 ### Changed
 - UUIds are hexadecimal
