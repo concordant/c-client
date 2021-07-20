@@ -50,7 +50,7 @@ class CServiceAdapterTest : StringSpec({
 
         CServiceAdapter.delete(dbname2, svcUrl)
         delay(300)
-        CServiceAdapter.connect(dbname2, svcUrl)
+        CServiceAdapter.connect(dbname2, svcUrl, session)
         delay(300)
 
         val uid = ClientUId("clientid")
@@ -59,7 +59,7 @@ class CServiceAdapterTest : StringSpec({
         val objectUId = CObjectUId("myCollection", "PNCounter", "myPNCounter")
 
         val my_crdt : DeltaCRDT = DeltaCRDTFactory.createDeltaCRDT("PNCounter", my_env)
-        CServiceAdapter.getObject(dbname2, svcUrl, objectUId, my_crdt, collection)
+        CServiceAdapter.getObject(dbname2, svcUrl, objectUId, collection)
         delay(300)
         my_crdt.toJson().shouldBe("{\"type\":\"PNCounter\",\"metadata\":{\"increment\":[],\"decrement\":[]},\"value\":0}")
 
@@ -71,7 +71,7 @@ class CServiceAdapterTest : StringSpec({
             delay(300)
 
             val my_crdt2 : DeltaCRDT = DeltaCRDTFactory.createDeltaCRDT("PNCounter", my_env)
-            CServiceAdapter.getObject(dbname2, svcUrl, objectUId, my_crdt2, collection)
+            CServiceAdapter.getObject(dbname2, svcUrl, objectUId, collection)
             delay(300)
             val text = "{\"type\":\"PNCounter\",\"metadata\":{\"increment\":[{\"name\":\"clientid\"},{\"first\":10,\"second\":{\"uid\":{\"name\":\"clientid\"},\"cnt\":-2147483647}}],\"decrement\":[{\"name\":\"clientid\"},{\"first\":5,\"second\":{\"uid\":{\"name\":\"clientid\"},\"cnt\":-2147483646}}]},\"value\":5}"
             my_crdt2.toJson().shouldBe(text)

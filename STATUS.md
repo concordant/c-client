@@ -46,20 +46,19 @@ The current Concordant platform is an alpha version. We made a number of impleme
 The main limitations are as follows:
 
 - Transactions can run only under `ConsistencyLevel.None`, which provides no firm guarantees. Such a transaction cannot abort, its updates are *not* guaranteed to be atomic, and transactions are *not* guaranteed to be visible in causal order.
-- Data is stored on a server, running on a designated device. If this device is not reachable, then the application will be non-responsive. Disconnected operation is *not* supported.
-- Notifications are not implemented. The application must poll to receive remote updates.
+- If Service Worker is not available, the data is stored on a server, running on a designated device. If this device is not reachable, then the application will be non-responsive.
 - The object interface is ad-hoc and does not conform to developers’ expectations.
-- Performance is poor, in particular because a transaction gets and puts a full copy of an object (i.e., we do not currently leverage the delta capability of the c-CRDT library) and because of polling. This is particularly apparent in the C-Markdown-Editor application.
+- Performance is poor, in particular because a transaction gets and puts a full copy of an object (i.e., we do not currently leverage the delta capability of the c-CRDT library). This is particularly apparent in the C-Markdown-Editor application.
 - There is no security layer.
 
 ## Short-term evolution
 
 We plan a new releases, fixing the most egregious issues, as follows:
 
-- Provide an on-device object cache, and move the c-client into a Service Worker, backed up in PouchDB.  This will enable the use of deltas, and provide stronger guarantees such as atomic transactions and disconnected operation.
+- Use deltas.
+- Atomic transactions.
 - Provide basic user authentication and security.
 - Fix the interface of CRDT objects, to conform to the corresponding Kotlin/TypeScript standard types.
-- Provide notifications.
 
 ## Medium-term evolution
 
