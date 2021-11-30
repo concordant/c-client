@@ -23,7 +23,6 @@ import client.utils.ConsistencyLevel
 import crdtlib.crdt.PNCounter
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 
 /**
@@ -31,7 +30,7 @@ import io.kotest.matchers.shouldBe
  */
 class CObjectTest : StringSpec({
     "open read collection then open write object should fail" {
-        val session = Session.connect(dbname, svcUrl, svcCred)
+        val session = Session.connect(dbname, svcUrl, wsPath, svcCred)
         val collection = session.openCollection("mycollection", true)
         shouldThrow<RuntimeException> {
             collection.open("mycounter", "PNCounter", false)
@@ -40,7 +39,7 @@ class CObjectTest : StringSpec({
     }
 
     "open a transaction in a transaction should fail" {
-        val session = Session.connect(dbname, svcUrl, svcCred)
+        val session = Session.connect(dbname, svcUrl, wsPath, svcCred)
         shouldThrow<RuntimeException> {
             session.transaction(ConsistencyLevel.None) {
                 session.transaction(ConsistencyLevel.None) {
@@ -51,7 +50,7 @@ class CObjectTest : StringSpec({
     }
 
     "open an object within a transaction should fail" {
-        val session = Session.connect(dbname, svcUrl, svcCred)
+        val session = Session.connect(dbname, svcUrl, wsPath, svcCred)
         val collection = session.openCollection("mycollection", true)
         shouldThrow<RuntimeException> {
             session.transaction(ConsistencyLevel.None) {
@@ -62,7 +61,7 @@ class CObjectTest : StringSpec({
     }
 
     "operation on an object outside a transaction should fail" {
-        val session = Session.connect(dbname, svcUrl, svcCred)
+        val session = Session.connect(dbname, svcUrl, wsPath, svcCred)
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounter", "PNCounter", false)
         shouldThrow<RuntimeException> {
@@ -79,7 +78,7 @@ class CObjectTest : StringSpec({
     }
 
     "update a read-only object should fail" {
-        val session = Session.connect(dbname, svcUrl, svcCred)
+        val session = Session.connect(dbname, svcUrl, wsPath, svcCred)
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounter", "PNCounter", true)
         var value = 1
@@ -102,7 +101,7 @@ class CObjectTest : StringSpec({
     // Opening twice an object should return the same object
     // instead of a new copy.
     "open two times an object should work" {
-        val session = Session.connect(dbname, svcUrl, svcCred)
+        val session = Session.connect(dbname, svcUrl, wsPath, svcCred)
         val collection = session.openCollection("mycollection", false)
         val deltacrdt1 = collection.open("mycounter", "PNCounter", false)
         val deltacrdt2 = collection.open("mycounter", "PNCounter", false)
@@ -111,7 +110,7 @@ class CObjectTest : StringSpec({
     }
 
 //    "use a closed object should fail" {
-//        val session = Session.connect(dbname, svcUrl, svcCred)
+//        val session = Session.connect(dbname, svcUrl, wsPath, svcCred)
 //        val collection = session.openCollection("mycollection", false)
 //        val deltacrdt = collection.open("mycounter", "PNCounter", false)
 //        deltacrdt.close()

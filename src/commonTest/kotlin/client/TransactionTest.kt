@@ -34,7 +34,7 @@ class TransactionTest : StringSpec({
     lateinit var session: Session
 
     beforeTest {
-        session = Session.connect(dbname, svcUrl, svcCred)
+        session = Session.connect(dbname, svcUrl, wsPath, svcCred)
     }
 
     afterTest {

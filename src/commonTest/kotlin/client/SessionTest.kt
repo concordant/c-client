@@ -34,6 +34,7 @@ val svcUrl = "http://127.0.0.1:4000"
 val svcCred = "credentials"
 val dbname = "mydatabase"
 val dbname2 = "myapp"
+val wsPath = "/"
 
 /**
  * Tests suite for Session class.
@@ -42,7 +43,7 @@ class SessionTest : StringSpec({
 
     "opened session should be active session" {
         ActiveSession.shouldBeNull()
-        val session = Session.connect(dbname, svcUrl, svcCred)
+        val session = Session.connect(dbname, svcUrl, wsPath, svcCred)
         session.getDbName().shouldBe(dbname)
         session.getServiceUrl().shouldBe(svcUrl)
         ActiveSession.shouldBe(session)
@@ -51,7 +52,7 @@ class SessionTest : StringSpec({
     }
 
     "use a closed session should fail" {
-        val session = Session.connect(dbname, svcUrl, svcCred)
+        val session = Session.connect(dbname, svcUrl, wsPath, svcCred)
         session.close()
         shouldThrow<RuntimeException> {
             session.openCollection("mycollection", true)
@@ -59,15 +60,15 @@ class SessionTest : StringSpec({
     }
 
     "open a second session should fail" {
-        val session = Session.connect(dbname, svcUrl, svcCred)
+        val session = Session.connect(dbname, svcUrl, wsPath, svcCred)
         shouldThrow<RuntimeException> {
-            Session.connect("mydatabase2", svcUrl, svcCred)
+            Session.connect("mydatabase2", svcUrl, wsPath, svcCred)
         }
         session.close()
     }
 
     "retrieve object UId" {
-        val session = Session.connect(dbname, svcUrl, svcCred)
+        val session = Session.connect(dbname, svcUrl, wsPath, svcCred)
         val collection = session.openCollection("mycollection", false)
         val deltacrdt1 = collection.open("mycounter", "PNCounter", false)
         val deltacrdt2 = collection.open("myregister", "MVRegister", true)
@@ -99,7 +100,7 @@ class SessionTest : StringSpec({
     }
 
     "check if object is writable" {
-        val session = Session.connect(dbname, svcUrl, svcCred)
+        val session = Session.connect(dbname, svcUrl, wsPath, svcCred)
         val collection = session.openCollection("mycollection", false)
         val deltacrdt1 = collection.open("mycounter", "PNCounter", false)
         val deltacrdt2 = collection.open("myregister", "MVRegister", true)
@@ -117,7 +118,7 @@ class SessionTest : StringSpec({
     }
 
     "close is done in cascade from session" {
-        val session = Session.connect(dbname, svcUrl, svcCred)
+        val session = Session.connect(dbname, svcUrl, wsPath, svcCred)
         val collection = session.openCollection("mycollection", false)
         val deltacrdt = collection.open("mycounter1", "PNCounter", false)
         session.close()
