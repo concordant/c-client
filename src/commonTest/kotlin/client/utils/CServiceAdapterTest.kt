@@ -34,7 +34,7 @@ class CServiceAdapterTest : StringSpec({
     lateinit var session: Session
 
     beforeTest {
-        session = Session.connect(dbname2, svcUrl, wsPath, svcCred)
+        session = Session.connect(dbname2, svcUrl, svcCred)
     }
 
     afterTest {
