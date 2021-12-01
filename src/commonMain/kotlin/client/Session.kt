@@ -32,6 +32,11 @@ import crdtlib.crdt.DeltaCRDT
 import crdtlib.utils.ClientUId
 
 /**
+ * Default value for websocket path used in session
+ */
+const val DEFAULT_WEBSOCKET_PATH = "/"
+
+/**
 * Class representing a client session.
 */
 class Session {
@@ -212,7 +217,7 @@ class Session {
          * @return the client session to communicate with Concordant.
          */
         @Name("connect")
-        fun connect(dbName: String, serviceUrl: String, webSocketPath: String, credentials: String): Session {
+        fun connect(dbName: String, serviceUrl: String, credentials: String, webSocketPath: String = DEFAULT_WEBSOCKET_PATH): Session {
             if (ActiveSession != null) throw RuntimeException("Another session is already active.")
             val clientUId = ClientUId(generateUUId4())
             val session = Session(dbName, serviceUrl, clientUId, webSocketPath)
