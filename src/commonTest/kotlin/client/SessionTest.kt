@@ -41,7 +41,7 @@ val wsPath = "/"
  */
 class SessionTest : StringSpec({
 
-    "opened session should be active session" {
+    "opened session should be active session with default websocket" {
         ActiveSession.shouldBeNull()
         val session = Session.connect(dbname, svcUrl, svcCred)
         session.getDbName().shouldBe(dbname)
@@ -52,7 +52,7 @@ class SessionTest : StringSpec({
         ActiveSession.shouldBeNull()
     }
 
-    "opened session should be active session" {
+    "opened session should be active session with passed websocket" {
         ActiveSession.shouldBeNull()
         val session = Session.connect(dbname, svcUrl, svcCred, wsPath)
         session.getDbName().shouldBe(dbname)
