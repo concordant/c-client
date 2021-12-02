@@ -23,7 +23,6 @@ import client.utils.ConsistencyLevel
 import crdtlib.crdt.PNCounter
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 
 /**
@@ -109,6 +108,7 @@ class CObjectTest : StringSpec({
         deltacrdt1.shouldBe(deltacrdt2)
         session.close()
     }
+
 
 //    "use a closed object should fail" {
 //        val session = Session.connect(dbname, svcUrl, svcCred)
