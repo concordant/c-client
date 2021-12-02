@@ -32,6 +32,12 @@ import crdtlib.crdt.DeltaCRDT
 import crdtlib.utils.ClientUId
 
 /**
+ * Default value for websocket path used in session
+ */
+const val DEFAULT_WEBSOCKET_PATH = "/"
+const val DEFAULT_WEBSOCKET_PORT = 8999
+
+/**
 * Class representing a client session.
 */
 class Session {
@@ -52,6 +58,17 @@ class Session {
     private val clientUId: ClientUId
 
     /**
+     * The WebSocket path
+     */
+    private val webSocketPath: String
+
+    /**
+     * The WebSocket port
+     */
+    private val webSocketPort: Int
+
+
+    /**
      * The environment linked to the session
      */
     internal val environment: ClientEnvironment
@@ -70,10 +87,12 @@ class Session {
      * Private constructor.
      * @param clientUId the client unique identifier.
      */
-    private constructor(dbName: String, serviceUrl: String, clientUId: ClientUId) {
+    private constructor(dbName: String, serviceUrl: String, clientUId: ClientUId, webSocketPath: String, webSocketPort: Int) {
         this.dbName = dbName
         this.serviceUrl = serviceUrl
         this.clientUId = clientUId
+        this.webSocketPath = webSocketPath
+        this.webSocketPort = webSocketPort
         this.environment = ClientEnvironment(this, this.clientUId)
     }
 
@@ -100,6 +119,23 @@ class Session {
     fun getClientUId() : ClientUId {
         return this.clientUId
     }
+
+    /**
+     * Get the web socket path
+     */
+    @Name("getWebSocketPath")
+    fun getWebSocketPath() : String {
+        return this.webSocketPath
+    }
+
+    /**
+     * Get the web socket port
+     */
+    @Name("getWebSocketPort")
+    fun getWebSocketPort() : Int {
+        return this.webSocketPort
+    }
+
 
     /**
      * Get the map of opened collection
@@ -193,14 +229,18 @@ class Session {
         /**
          * Connects a client to Concordant platform.
          * @param dbName the database name that should be accessed.
+         * @param webSocketPath the path to the web socket
          * @param credentials the credentials provided by the client.
          * @return the client session to communicate with Concordant.
          */
         @Name("connect")
-        fun connect(dbName: String, serviceUrl: String, credentials: String): Session {
+        fun connect(dbName: String, serviceUrl: String,
+                    credentials: String,
+                    webSocketPath: String = DEFAULT_WEBSOCKET_PATH,
+                    webSocketPort: Int = DEFAULT_WEBSOCKET_PORT): Session {
             if (ActiveSession != null) throw RuntimeException("Another session is already active.")
             val clientUId = ClientUId(generateUUId4())
-            val session = Session(dbName, serviceUrl, clientUId)
+            val session = Session(dbName, serviceUrl, clientUId, webSocketPath, webSocketPort)
             ActiveSession = session
             CServiceAdapter.connect(dbName, serviceUrl, session)
             return session

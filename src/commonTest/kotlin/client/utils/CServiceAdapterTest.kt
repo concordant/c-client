@@ -19,10 +19,7 @@
 
 package client.utils
 
-import client.svcUrl
-import client.svcCred
-import client.dbname2
-import client.Session
+import client.*
 import crdtlib.crdt.DeltaCRDT
 import crdtlib.crdt.DeltaCRDTFactory
 import crdtlib.crdt.PNCounter

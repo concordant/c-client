@@ -19,7 +19,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 description = "The Concordant multiplatform library, providing the high-level application-facing API"
 group = "io.concordant"
-version = "1.3.0"
+version = "1.3.1"
 
 plugins {
     kotlin("multiplatform") version "1.4.20"
