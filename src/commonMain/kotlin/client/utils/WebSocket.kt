@@ -47,7 +47,7 @@ fun connectWebSocket(session: Session) {
     var regex = expr.toRegex()
     val host = regex.find(session.getServiceUrl())!!.groupValues!!.get(2)
     GlobalScope.launch {
-        client?.webSocket(method = HttpMethod.Get, host = host, port = 8999, path = session.getWebSocketPath()) {
+        client?.webSocket(method = HttpMethod.Get, host = host, port = session.getWebSocketPort(), path = session.getWebSocketPath()) {
             send("""{"appName":""""+session.getDbName()+"""","userId":""""+session.getClientUId()+""""}""")
             for (frame in incoming) {
                 when (frame) {
