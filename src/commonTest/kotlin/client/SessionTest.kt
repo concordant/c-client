@@ -34,7 +34,8 @@ val svcUrl = "http://127.0.0.1:4000"
 val svcCred = "credentials"
 val dbname = "mydatabase"
 val dbname2 = "myapp"
-val wsPath = "/"
+val wsPath = "/testpath"
+val wsPort = 8998
 
 /**
  * Tests suite for Session class.
@@ -52,12 +53,13 @@ class SessionTest : StringSpec({
         ActiveSession.shouldBeNull()
     }
 
-    "opened session should be active session with passed websocket" {
+    "opened session should be active session with passed websocket config" {
         ActiveSession.shouldBeNull()
-        val session = Session.connect(dbname, svcUrl, svcCred, wsPath)
+        val session = Session.connect(dbname, svcUrl, svcCred, wsPath, wsPort)
         session.getDbName().shouldBe(dbname)
         session.getServiceUrl().shouldBe(svcUrl)
         session.getWebSocketPath().shouldBe(wsPath)
+        session.getWebSocketPort().shouldBe(wsPort)
         ActiveSession.shouldBe(session)
         session.close()
         ActiveSession.shouldBeNull()
