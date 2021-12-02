@@ -10,8 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 ### Removed
 ### Fixed
-- Bug fix on WebSocket path addition
 ### Security
+
+## [1.3.1] - 2021-07-20
+### Fixed
+- Bug fix on WebSocket path addition
 
 ## [1.3.1] - 2021-07-20
 ### Added
