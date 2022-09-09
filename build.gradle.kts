@@ -1,4 +1,4 @@
-// Copyright © 2020, Concordant and contributors.
+// Copyright © 2022, Concordant and contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 // associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -240,7 +240,7 @@ npmPublishing {
                 types = "c-client.d.ts"
                 "description" to project.description
                 keywords = mutableListOf("concordant", "crdt", "conflict-free", "replicated datatypes")
-                homepage = "concordant.io"
+                homepage = "https://concordant.io"
                 "license" to "MIT"
                 "bugs" to jsonObject {
                     "email" to "support@concordant.io"

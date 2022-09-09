@@ -1,46 +1,41 @@
-# Concordant Client Library
+# Concordant Client API
 
-[![](https://gitlab.inria.fr/concordant/software/c-client/badges/master/pipeline.svg)](
+[![CI-Pipeline](https://gitlab.inria.fr/concordant/software/c-client/badges/master/pipeline.svg)](
 https://gitlab.inria.fr/concordant/software/c-client/-/commits/master)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
 
 Concordant client library in Kotlin for the Concordant platform API.
 
-The documentation is available on [GitLab pages](
-https://concordant.gitlabpages.inria.fr/software/c-client/c-client/).  
-See also the [C-CRDTlib](
-https://www.npmjs.com/package/@concordant/c-crdtlib)
-and [its documentation](
-https://concordant.gitlabpages.inria.fr/software/c-crdtlib/c-crdtlib/)
-for CRDTs type-specific usage.
+The documentation is available on [GitLab pages](https://concordant.gitlabpages.inria.fr/software/c-client/c-client/).
 
-The main repository is in [the Inria gitlab](https://gitlab.inria.fr/concordant/software/c-client/) (this is where you can post tickets.  There is an identical clone in  [GitHub](https://github.com/concordant/c-client) (tickets here might be ignored).
+See also the [C-CRDTlib](https://www.npmjs.com/package/@concordant/c-crdtlib)
+and [its documentation](https://concordant.gitlabpages.inria.fr/software/c-crdtlib/c-crdtlib/)
+for CRDTs type-specific usage.
 
 ## Getting started
 
-This library is delivered as both a [Maven package](
-https://search.maven.org/artifact/io.concordant/c-client)
-and an [NPM package](
-https://www.npmjs.com/package/@concordant/c-client).
+This library is delivered as both a [Maven package](https://search.maven.org/artifact/io.concordant/c-client)
+and an [NPM package](https://www.npmjs.com/package/@concordant/c-client).
 
 Install the package:
+
 ``` shell
-$ npm i @concordant/c-client
+npm i @concordant/c-client
 ```
 
-Follow [the instructions to start a C-service](
-https://www.npmjs.com/package/@concordant/c-client).
+Follow [the instructions to start a C-service](https://www.npmjs.com/package/@concordant/c-client).
 
 ### Usage
 
 Here is how a typical session using the Concordant platform looks like:
+
 ``` typescript
 import * from @concordant/c-client;
 
 // Open a session
 let session = Session.Companion.connect(
     "mydatabase",
-    "http://url-to-c-service",
+    "<http://url-to-c-service>",
     "credentials");
 
 // The Concordant platform provides consistency guarantees
@@ -81,13 +76,11 @@ session.close();
 
 ## Technical description
 
-**Note:** Some features presented here are not implemented yet.
-  This is specified by subsequent **Note**s in the text.
+**Note:** Some features presented here are not implemented yet. This is specified by subsequent **Note**s in the text.
 
 An application stores information in *objects*. In Concordant, an object is an
 instance of a CRDT from the C-CRDTlib.
-See [its documentation](
-https://concordant.gitlabpages.inria.fr/software/c-crdtlib/c-crdtlib/)
+See [its documentation](https://concordant.gitlabpages.inria.fr/software/c-crdtlib/c-crdtlib/)
 for more about objects.
 
 A *collection* is a set of related objects. Concordant provides
@@ -102,14 +95,14 @@ which represents a connection to a C-service & database.
 In future versions, Concordant will support opening multiple collections, and
 will provide finer control over the pushing, fetching and merging of updates.
 
-We now explain the API in more detail. See also the [code documentation](
-https://concordant.gitlabpages.inria.fr/software/c-client/c-client/).
+We now explain the API in more detail. See also the [code documentation](https://concordant.gitlabpages.inria.fr/software/c-client/c-client/).
 
 ### Session
 
 A session provides the context for client interaction
 with the Concordant database engine.
 It manages, among other things:
+
 - The connection to the database (URL, database name and credentialss).
 - The interest set, i.e., the set of objects currently open by the client.
 
@@ -189,6 +182,7 @@ of its updates are visible outside of it, and similarly after it aborts; after
 it commits, all of its updates are visible.
 
 **Note**: Concordant currently only supports the `None` consistency level:
+
 - Opening an object creates it in its default state
   and asynchronously requests its remote state from the service.
 - Remote updates (including initial state) are received asynchronously
@@ -212,3 +206,8 @@ before the beginning of a transaction that accesses them.
 No concurrency is allowed within a session:
 concurrent transactions are not allowed
 and concurrent modifications of opened objects have undefined behaviour.
+
+## Plateform dev ressources
+
+- [C-Client build and dev documentation](./README.dev.md)
+- [General Plateform dev status](https://github.com/concordant/.github/blob/main/STATUS.md)
