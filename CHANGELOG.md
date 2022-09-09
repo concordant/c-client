@@ -14,6 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed
 - Security
 
+## [1.3.3] - 2022-09-09
+
+- Changed
+  - Open Source the code
+  - change Gitlab links to github
+  - changelod packed format
+  - 2022 License
+  - dev documentation
+
 ## [1.3.2] - 2021-12-03
 
 - Changed
