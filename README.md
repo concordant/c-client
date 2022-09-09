@@ -6,17 +6,16 @@ https://gitlab.inria.fr/concordant/software/c-client/-/commits/master)
 
 Concordant client library in Kotlin for the Concordant platform API.
 
-The documentation is available on [GitLab pages](https://concordant.gitlabpages.inria.fr/software/c-client/c-client/).  
+The documentation is available on [GitLab pages](https://concordant.gitlabpages.inria.fr/software/c-client/c-client/).
+
 See also the [C-CRDTlib](https://www.npmjs.com/package/@concordant/c-crdtlib)
 and [its documentation](https://concordant.gitlabpages.inria.fr/software/c-crdtlib/c-crdtlib/)
 for CRDTs type-specific usage.
 
 ## Getting started
 
-This library is delivered as both a [Maven package](
-https://search.maven.org/artifact/io.concordant/c-client)
-and an [NPM package](
-https://www.npmjs.com/package/@concordant/c-client).
+This library is delivered as both a [Maven package](https://search.maven.org/artifact/io.concordant/c-client)
+and an [NPM package](https://www.npmjs.com/package/@concordant/c-client).
 
 Install the package:
 
@@ -24,8 +23,7 @@ Install the package:
 npm i @concordant/c-client
 ```
 
-Follow [the instructions to start a C-service](
-https://www.npmjs.com/package/@concordant/c-client).
+Follow [the instructions to start a C-service](https://www.npmjs.com/package/@concordant/c-client).
 
 ### Usage
 
@@ -104,6 +102,7 @@ We now explain the API in more detail. See also the [code documentation](https:/
 A session provides the context for client interaction
 with the Concordant database engine.
 It manages, among other things:
+
 - The connection to the database (URL, database name and credentialss).
 - The interest set, i.e., the set of objects currently open by the client.
 
@@ -207,3 +206,8 @@ before the beginning of a transaction that accesses them.
 No concurrency is allowed within a session:
 concurrent transactions are not allowed
 and concurrent modifications of opened objects have undefined behaviour.
+
+## Plateform dev ressources
+
+- [C-Client build and dev documentation](./README.dev.md)
+- [General Plateform dev status](https://github.com/concordant/.github/blob/main/STATUS.md)
