@@ -1,30 +1,28 @@
-## Private releases
+# Private releases
 
 Development versions of this library
 are delivered as both Maven packages and NPM packages
-in a private [Gitlab Packages registry](
-https://gitlab.inria.fr/concordant/software/c-client/-/packages).
+in a private [Gitlab Packages registry](https://gitlab.inria.fr/concordant/software/c-client/-/packages).
 
 To use it, you will need to authenticate to Gitlab, using either:
-- a Gitlab [deploy token](
-  https://docs.gitlab.com/ee/user/project/deploy_tokens/)
-  with at least the `read_package_registry` scope, or
-- a Gitlab [personal access token](
-  https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
-  with at least the `read_api` scope.
 
-### Kotlin and Gradle
+- a Gitlab [deploy token](https://docs.gitlab.com/ee/user/project/deploy_tokens/) with at least the `read_package_registry` scope, or
+- a Gitlab [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html) with at least the `read_api` scope.
+
+## Kotlin and Gradle
 
 To setup authentication, add the token to your gradle properties file
 `~/.gradle/gradle.properties`:
+
 ``` shell
 gitlabToken=<deployOrPersonalToken>
 ```
 
 Then, in your project configuration build file `build.gradle.kts`:
-- Ensure `mavenCentral()`
-  is listed in the `repositories{}` for usual packages.
+
+- Ensure `mavenCentral()` is listed in the `repositories{}` for usual packages.
 - Add Gitlab to repositories:
+
 ``` kotlin
 repositories {
     maven {
@@ -42,25 +40,29 @@ repositories {
 }
 
 ```
+
 - Add the c-crdtlib Maven package as a dependency:
+
 ``` kotlin
 dependencies {
     implementation("concordant:c-crdtlib:x.y.z")
 }
 ```
 
-### JavaScript/TypeScript and NPM
+## JavaScript/TypeScript and NPM
 
 Associate `@concordant` scope with the private registry
 and setup authentication:
+
 ``` shell
-$ npm config set @concordant:registry "https://gitlab.inria.fr/api/v4/packages/npm/"
-$ npm config set '//gitlab.inria.fr/api/v4/packages/npm/:_authToken' "<deployOrPersonalToken>"
+npm config set @concordant:registry "https://gitlab.inria.fr/api/v4/packages/npm/"
+npm config set '//gitlab.inria.fr/api/v4/packages/npm/:_authToken' "<deployOrPersonalToken>"
 ```
 
 Then install the package:
+
 ``` shell
-$ npm i @concordant/c-client
+npm i @concordant/c-client
 ```
 
 ## Build project
@@ -70,34 +72,39 @@ Kotlin sources (code and tests) are compiled to JVM Bytecode
 and to Javascript as a Node.js package.
 
 `gradle assemble`:
+
 - compiles code and tests to JVM Bytecode;
 - compiles code and tests to Javascript (Node.js package);
 - creates a TypeScript interface
 - assembles a NPM package
 
 `gradle allTests`:
+
 - runs JVM test suite;
 - runs Node.js test suite in a server like manner;
-- a report containing all tests results can be found in the file
-  `build/reports/tests/allTests/index.html`.
+- a report containing all tests results can be found in the file `build/reports/tests/allTests/index.html`.
 
 `gradle build`:
+
 - compiles code and test.
 
 `gradle pack`:
+
 - pack the NPM package
 
 `gradle publish`:
-- publish the Maven and NPM packages
-  (requires authentication ; better use it via CI pipelines).
+
+- publish the Maven and NPM packages (requires authentication ; better use it via CI pipelines).
 
 `gradle dokkaHtml`:
+
 - creates the documentation from code comments;
-- documentation is accessible at `build/dokka/html/crdtlib/index.html`.
-See `gradle tasks` for variants other than HTML.
+- documentation is accessible at `build/dokka/html/crdtlib/index.html`. See `gradle tasks` for variants other than HTML.
 
 `gradle clean`:
+
 - cleans the project.
 
 `gradle tasks`:
+
 - show all available tasks with descriptions.
